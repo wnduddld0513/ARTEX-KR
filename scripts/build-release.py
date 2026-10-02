@@ -57,6 +57,10 @@ def build_target(target, args, metadata):
             add_file(archive, binary, f"{folder}/{binary_name}", executable=True)
             starter = ROOT / ("start.bat" if goos == "windows" else "start.sh")
             add_file(archive, starter, f"{folder}/{starter.name}", executable=goos != "windows")
+            if goos == "windows":
+                for name in ("launcher.bat", "launcher.ps1"):
+                    add_file(archive, ROOT / "scripts/windows-launcher" / name, f"{folder}/{name}")
+                add_file(archive, ROOT / "scripts/windows-launcher/README.md", f"{folder}/실행-도우미.md")
             for name in ("README.md", "README.ko.md", "CHANGELOG.md", "LICENSE", "config.example.json"):
                 add_file(archive, ROOT / name, f"{folder}/{name}")
             # Package only repository files, excluding local dependencies and caches.
