@@ -134,7 +134,7 @@ These serve as the fallback; there is no separate default.css file. */
 
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-sans), system-ui, sans-serif;
+    font-family: var(--font-sans), "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
   }
   html {
     @apply font-sans;

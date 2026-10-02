@@ -33,7 +33,7 @@ function useChart() {
   const context = React.useContext(ChartContext)
 
   if (!context) {
-    throw new Error("useChart must be used within a <ChartContainer />")
+    throw new Error("useChart는 <ChartContainer /> 안에서 사용해야 합니다")
   }
 
   return context
@@ -255,7 +255,7 @@ function ChartTooltipContent({
                       {item.value != null && (
                         <span className="font-mono font-medium text-foreground tabular-nums">
                           {typeof item.value === "number"
-                            ? item.value.toLocaleString()
+                            ? item.value.toLocaleString("ko-KR")
                             : String(item.value)}
                         </span>
                       )}
