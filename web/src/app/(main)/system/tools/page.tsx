@@ -140,6 +140,31 @@ function applyRows(schema: Record<string, any>, rows: ParamRow[]): Record<string
   return next;
 }
 
+// readRowDescription returns the description a row maps to inside a schema
+// (top-level param or a sub-field of an array param's items).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function readRowDescription(schema: Record<string, any> | undefined, row: ParamRow): string | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const props = (schema?.properties ?? {}) as Record<string, any>;
+  const value = row.parentKey ? props[row.parentKey]?.items?.properties?.[row.name]?.description : props[row.name]?.description;
+  return typeof value === "string" ? value : undefined;
+}
+
+// restoreOriginalRows puts the backend's original text back for rows the user did not touch, so
+// saving a system tool without edits never overwrites model-facing DB text with the display translation.
+function restoreOriginalRows(
+  rows: ParamRow[],
+  displaySchema: Record<string, any> | undefined,
+  originalSchema: Record<string, any> | undefined,
+): ParamRow[] {
+  if (!originalSchema) return rows;
+  return rows.map((row) => {
+    if (row.description !== readRowDescription(displaySchema, row)) return row; // 사용자가 고친 행
+    const original = readRowDescription(originalSchema, row);
+    return original !== undefined && original !== row.description ? { ...row, description: original } : row;
+  });
+}
+
 // ToolEditor is the full edit form for one tool, rendered inside the drawer.
 function ToolEditor({
   tool,
@@ -170,9 +195,14 @@ function ToolEditor({
   async function save() {
     setSaving(true);
     try {
+      // 표시용 한국어를 그대로 저장해 DB 원문을 덮어쓰지 않도록, 손대지 않은 값은 원문을 보낸다.
+      const origin = tool._original;
       await api.saveTool(tool.key, {
-        description,
-        schema: applyRows(tool.schema, rows),
+        description: origin?.description && description === tool.description ? origin.description : description,
+        schema: applyRows(
+          (origin?.schema as Record<string, unknown>) ?? tool.schema,
+          restoreOriginalRows(rows, tool.schema, origin?.schema),
+        ),
         agents: bound,
         enabled,
       });

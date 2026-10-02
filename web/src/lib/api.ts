@@ -5,6 +5,8 @@
 
 import { localizeBackendError } from "@/lib/backend-errors";
 import { localizeAgentDetail, localizeAgentMetas, localizePromptVars } from "@/lib/builtin-agents";
+import { localizeAssetInterceptRules, localizeInterceptRules } from "@/lib/builtin-rules";
+import { localizeTools } from "@/lib/builtin-tools";
 import type { ChatMention } from "@/lib/chat-mentions";
 import { MOCK } from "@/lib/mock/enabled";
 import { mockHandle } from "@/lib/mock/handler";
@@ -427,7 +429,7 @@ export const api = {
 
   // ---- 작업 수준 자산 차단/허용 규칙(개요)----
   taskInterceptRules: (id: string) =>
-    get<{ rules: AssetInterceptRule[] | null }>(`/tasks/${id}/intercept-rules`).then((r) => arr(r.rules)),
+    get<{ rules: AssetInterceptRule[] | null }>(`/tasks/${id}/intercept-rules`).then((r) => localizeAssetInterceptRules(arr(r.rules))),
   createTaskInterceptRule: (id: string, rule: AssetInterceptRuleInput) =>
     post<AssetInterceptRule>(`/tasks/${id}/intercept-rules`, rule),
   updateTaskInterceptRule: (id: string, ruleId: number, rule: AssetInterceptRuleInput) =>
@@ -1100,7 +1102,7 @@ export const api = {
     put<{ ok: boolean }>(`/agents/${key}/visibility`, { mcp, skill }),
 
   // ---- tools(내장 도구 카탈로그) ----
-  tools: () => get<{ tools: Tool[] }>("/tools").then((r) => arr(r.tools)),
+  tools: () => get<{ tools: Tool[] }>("/tools").then((r) => localizeTools(arr(r.tools))),
   saveTool: (key: string, patch: Pick<Tool, "description" | "schema" | "agents" | "enabled">) =>
     put<{ ok: boolean }>(`/tools/${key}`, patch),
   resetTool: (key: string) => post<{ ok: boolean }>(`/tools/${key}/reset`, {}),
@@ -1211,7 +1213,7 @@ export const api = {
     post<{ ok: boolean }>("/visibility/skill/toggle", { agent_id: agentId, skill_name: skillName, visible }),
 
   // ---- intercept rules ----
-  interceptRules: () => get<{ rules: InterceptRule[] }>("/intercept/rules").then((r) => arr(r.rules)),
+  interceptRules: () => get<{ rules: InterceptRule[] }>("/intercept/rules").then((r) => localizeInterceptRules(arr(r.rules))),
   createInterceptRule: (rule: Omit<InterceptRule, "id" | "created_at" | "updated_at">) =>
     post<InterceptRule>("/intercept/rules", rule),
   updateInterceptRule: (id: number, rule: Omit<InterceptRule, "id" | "created_at" | "updated_at">) =>
@@ -1221,7 +1223,8 @@ export const api = {
     post<{ ok: boolean; enabled: boolean }>(`/intercept/rules/${id}/toggle`, { enabled }),
 
   // ---- asset intercept rules(자산 차단: 전역 블랙리스트) ----
-  assetInterceptRules: () => get<{ rules: AssetInterceptRule[] }>("/asset-intercept/rules").then((r) => arr(r.rules)),
+  assetInterceptRules: () =>
+    get<{ rules: AssetInterceptRule[] }>("/asset-intercept/rules").then((r) => localizeAssetInterceptRules(arr(r.rules))),
   createAssetInterceptRule: (rule: Pick<AssetInterceptRule, "enabled" | "kind" | "pattern" | "note">) =>
     post<AssetInterceptRule>("/asset-intercept/rules", rule),
   updateAssetInterceptRule: (id: number, rule: Pick<AssetInterceptRule, "enabled" | "kind" | "pattern" | "note">) =>

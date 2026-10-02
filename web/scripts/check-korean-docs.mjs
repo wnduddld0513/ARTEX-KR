@@ -12,7 +12,8 @@ function collect(directory, output = files) {
     else if (file.endsWith(".md")) output.push(file);
   }
 }
-// Agent instructions under skills/ use English; user documentation uses Korean.
+// skills/ 아래 에이전트 문서는 원본 저장소의 원문(중국어/영어)을 그대로 쓴다.
+// 사용자 문서(docs, sidequestion, README, CHANGELOG)는 한국어로 쓴다.
 for (const directory of ["docs", "sidequestion"]) collect(directory);
 collect("skills", agentFiles);
 const failures = [];
@@ -24,7 +25,7 @@ for (const file of [...files, ...agentFiles]) {
     if (inCode) return;
     // Original identifiers and URLs in examples/links remain verbatim.
     const prose = line.replace(/`[^`]*`/g, "").replace(/\]\([^)]*\)/g, "]");
-    const unexpected = agentDoc ? /[\p{Script=Han}\p{Script=Hangul}]/u : /\p{Script=Han}/u;
+    const unexpected = agentDoc ? /\p{Script=Hangul}/u : /\p{Script=Han}/u;
     if (unexpected.test(prose)) failures.push(`${file}:${i + 1}: ${line.slice(0, 180)}`);
   });
 }
@@ -34,5 +35,5 @@ if (failures.length) {
   process.exitCode = 1;
 } else {
   console.log(`한국어 문서 검사 통과: ${files.length}개 문서`);
-  console.log(`영어 에이전트 문서 검사 통과: ${agentFiles.length}개 문서`);
+  console.log(`원문 유지 에이전트 문서 검사 통과: ${agentFiles.length}개 문서`);
 }

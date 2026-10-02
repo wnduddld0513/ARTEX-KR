@@ -145,7 +145,7 @@ func (s *Server) applyTaskControlWithCause(t *Task, action string, pauseCause er
 	default:
 		return out, fmt.Errorf("action must be pause|resume")
 	}
-	log.Printf("[task] #%s %s", t.ID, map[string]string{"pause": "已暂停", "resume": "已继续"}[action])
+	log.Printf("[task] #%s %s", t.ID, map[string]string{"pause": "일시중지했습니다", "resume": "재개했습니다"}[action])
 	return out, nil
 }
 

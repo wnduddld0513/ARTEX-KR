@@ -1237,6 +1237,9 @@ export interface Tool {
   exec?: Record<string, any>; // 自定义工具执行规格(kind!=builtin)
   deferred?: boolean; // schema 延迟(SearchExtraTools/ExecuteExtraTool)
   calls?: number; // persistent runtime invocation count (older APIs may omit it)
+  // 화면 표시용 한국어 번역이 붙은 시스템 도구가 함께 싣는 원문 스냅샷.
+  // 편집 화면에서 값을 바꾸지 않고 저장할 때 DB 원문(모델이 보는 문구)을 유지하는 데 쓴다.
+  _original?: { description?: string; schema?: Record<string, any> };
 }
 
 // ---- Stats ----
@@ -1269,6 +1272,8 @@ export interface InterceptRule {
   timeout_action: "deny" | "allow";
   created_at: string;
   updated_at: string;
+  // 표시용 번역이 붙은 내장 규칙의 원문 스냅샷(저장 시 원문 유지용).
+  _original?: { name?: string; message?: string };
 }
 
 // ---- Asset Intercept Rules（资产拦截：全局黑名单） ----
@@ -1303,6 +1308,8 @@ export interface AssetInterceptRule {
   builtin: boolean;
   created_at: string;
   updated_at: string;
+  // 표시용 번역이 붙은 내장 규칙의 원문 스냅샷(저장 시 원문 유지용).
+  _original?: { note?: string };
 }
 
 export interface InterceptPending {

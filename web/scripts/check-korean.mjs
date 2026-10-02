@@ -10,8 +10,9 @@ function scan(directory) {
     const file = path.join(directory, entry.name);
     if (entry.isDirectory()) { scan(file); continue; }
     if (!/\.[jt]sx?$/.test(file) || file.includes(".test.")) continue;
-    // These modules intentionally recognize original backend errors/history.
-    if (["backend-errors.ts", "chat-mentions.ts"].includes(entry.name)) continue;
+    // These modules intentionally keep original backend strings for exact matching
+    // (error mapping, chat history tokens, DB seed metadata), so they are skipped here.
+    if (["backend-errors.ts", "chat-mentions.ts", "builtin-agents.ts", "builtin-rules.ts"].includes(entry.name)) continue;
     const source = fs.readFileSync(file, "utf8");
     const ast = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true);
     function visit(node) {

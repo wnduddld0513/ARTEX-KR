@@ -134,6 +134,8 @@ export default function AssetInterceptPage() {
       return;
     }
     const payload = { ...form, pattern: form.pattern.trim() };
+    // 표시용 한국어를 그대로 저장해 DB 원문을 덮어쓰지 않도록, 손대지 않은 설명은 원문을 보낸다.
+    if (editing?._original?.note && payload.note === editing.note) payload.note = editing._original.note;
     setSaving(true);
     try {
       if (editing) {

@@ -26,6 +26,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { api } from "@/lib/api";
+import { localizeRuleName } from "@/lib/builtin-rules";
 import type {
   InterceptApprovalFilter,
   InterceptApprovalRow,
@@ -118,7 +119,9 @@ function MatchCell({ row, showReason = true }: { row: InterceptApprovalRow; show
           모델 승인
         </Badge>
       ) : (
-        <span className="truncate" title={row.rule_name || undefined}>{row.rule_name || "규칙이 기록되지 않았거나 삭제됨"}</span>
+        <span className="truncate" title={row.rule_name || undefined}>
+          {localizeRuleName(row.rule_name) || "규칙이 기록되지 않았거나 삭제됨"}
+        </span>
       )}
       {showReason ? (
         <p className="truncate text-muted-foreground text-xs" title={reason}>
@@ -386,7 +389,7 @@ export function ApprovalDetail({
             {audit?.rule_name ? (
               <>
                 <dt className="text-muted-foreground">규칙 스냅샷</dt>
-                <dd>{audit.rule_name}</dd>
+                <dd>{localizeRuleName(audit.rule_name)}</dd>
               </>
             ) : null}
             {audit?.profile_id ? (

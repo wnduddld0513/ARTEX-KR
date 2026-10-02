@@ -358,7 +358,7 @@ func NewManager(dir, proxyAddr string) (*Manager, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("[pg] 数据库配置来源: %s", source)
+	log.Printf("[pg] 데이터베이스 설정 출처: %s", source)
 	pg, err := pgdb.Open(dsn)
 	if err != nil {
 		return nil, err
@@ -436,7 +436,7 @@ func NewManager(dir, proxyAddr string) (*Manager, error) {
 	}
 	if m.traffic != nil {
 		if err := m.traffic.SetUpstreamProxy(m.globalProxy); err != nil {
-			log.Printf("[proxy] 全局代理 %q 无效，已忽略: %v", m.globalProxy, err)
+			log.Printf("[proxy] 전역 프록시 %q가 유효하지 않아 무시했습니다: %v", m.globalProxy, err)
 		}
 	}
 	m.enrich = enrich.New(m.assets, m.ProxyAddr, 4)
@@ -640,7 +640,7 @@ const browserMCPName = "browser"
 func (m *Manager) syncBrowserMCPProxy() {
 	servers, err := m.pg.ListMCP()
 	if err != nil {
-		log.Printf("[mcp] browser 代理同步: 读取 MCP 列表失败: %v", err)
+		log.Printf("[mcp] browser 프록시 동기화: MCP 목록 조회 실패: %v", err)
 		return
 	}
 	var srv *pgdb.MCPServer
@@ -669,13 +669,13 @@ func (m *Manager) syncBrowserMCPProxy() {
 	srv.Args = encodeJSON(args)
 	srv.Env = encodeJSON(env)
 	if _, err := m.pg.SaveMCP(srv); err != nil {
-		log.Printf("[mcp] browser 代理同步失败: %v", err)
+		log.Printf("[mcp] browser 프록시 동기화 실패: %v", err)
 		return
 	}
 	if proxy != "" {
-		log.Printf("[mcp] browser MCP 已挂捕获代理 %s (CA %s)", proxy, cert)
+		log.Printf("[mcp] browser MCP에 캡처 프록시 %s를 연결했습니다 (CA %s)", proxy, cert)
 	} else {
-		log.Printf("[mcp] browser MCP 已移除捕获代理配置")
+		log.Printf("[mcp] browser MCP에서 캡처 프록시 설정을 제거했습니다")
 	}
 }
 

@@ -35,7 +35,7 @@ func (s *Server) launchTask(t *Task, seedText string, seedFirstIntent bool) {
 	}
 	s.engine.decInflight(t.ID)
 	if _, err := s.admitTask(t, "bootstrap"); err != nil {
-		log.Printf("[concurrency] task %s 启动失败: %v", t.ID, err)
+		log.Printf("[concurrency] task %s 시작 실패: %v", t.ID, err)
 	}
 }
 
@@ -270,7 +270,7 @@ func (s *Server) reconcileConcurrency() {
 				"任务当前无法解析可运行的 Planner/Worker LLM，已释放并发槽；配置恢复后按队列顺序继续"))
 			if err := s.m.EnqueueTask(task.ID, mode); err != nil {
 				s.engine.Resume(task)
-				log.Printf("[concurrency] task %s 因 LLM 不可用入队失败: %v", task.ID, err)
+				log.Printf("[concurrency] task %s LLM을 사용할 수 없어 큐 등록 실패: %v", task.ID, err)
 				continue
 			}
 			s.engine.emitActivity(task, db.Activity{Worker: "system", Kind: "text",
@@ -357,7 +357,7 @@ func (s *Server) reviveTask(t *Task) {
 		return
 	}
 	if _, err := s.admitTask(t, "resume"); err != nil {
-		log.Printf("[revive] task %s 恢复失败: %v", t.ID, err)
+		log.Printf("[revive] task %s 복구 실패: %v", t.ID, err)
 	}
 }
 
@@ -396,7 +396,7 @@ func (s *Server) createGoals(ctx context.Context, t *Task, emit func(db.Activity
 		// as a single goal so the task still has something to judge against. This is the
 		// only path that writes here — decomposed goals are already persisted by the tool.
 		if g := strings.TrimSpace(t.Goal); g != "" {
-			log.Printf("[goals] task %s: LLM 目标拆解无产出，回退为「原始目标作为单目标」", t.ID)
+			log.Printf("[goals] task %s: LLM 목표 분해 결과가 없어 원래 목표를 단일 목표로 대체합니다", t.ID)
 			origin, _ := t.Store.OriginFactID()
 			id, _ := t.Store.AddNode(db.KindGoal, map[string]any{"text": g}, 0, "open", "system", nil)
 			if origin > 0 && id > 0 {

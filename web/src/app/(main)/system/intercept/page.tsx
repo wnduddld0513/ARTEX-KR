@@ -431,7 +431,12 @@ export default function InterceptPage() {
     setSaving(true);
     try {
       if (editing) {
-        await api.updateInterceptRule(editing.id, form);
+        // 표시용 한국어를 그대로 저장해 DB 원문을 덮어쓰지 않도록, 손대지 않은 값은 원문을 보낸다.
+        const origin = editing._original;
+        const payload = { ...form };
+        if (origin?.name && payload.name === editing.name) payload.name = origin.name;
+        if (origin?.message && payload.message === editing.message) payload.message = origin.message;
+        await api.updateInterceptRule(editing.id, payload);
         toast.success("규칙이 업데이트되었습니다");
       } else {
         await api.createInterceptRule(form);
