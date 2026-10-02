@@ -17,7 +17,7 @@
 | 메인/사이드 병렬, 양방향 취소 격리 | 통과 | 블로킹 Provider, `TestMainSideConcurrencyAndIndependentCancellation` |
 | 도구 미실행, 스트리밍 / 비스트리밍, 실패 시 기존 사용량 | 통과 | `TestServiceNoToolsAndUsageOnFailure` |
 | 실제 norma ChatAgent + 로컬 Read 도구, 메인 transcript / 활동 격리 | 통과 | `TestSideActualChatCheckpointToolResultAndTranscriptIsolation`, 스트리밍·비스트리밍 하위 케이스 |
-| 영속화, 페이징, 멱등, 재시작 후 부분 답변 유지 | 통과 | `TestSideHistoryIdempotencyPagingAndRecovery` |
+| 저장, 페이징, 멱등, 재시작 후 부분 답변 유지 | 통과 | `TestSideHistoryIdempotencyPagingAndRecovery` |
 | 비우기와 늦은 쓰기 경합, 상위 리소스 삭제, 버전 비교 | 통과 | `TestSideClearLateWritersAndDeletedParent` |
 | MainAgent / Worker 아카이브와 복구, v1/v2/v3 | 통과 | `TestSideTaskArchiveVersions` |
 | 세 가지 상위 인터페이스, 인증, 리소스 귀속, Worker 논리 삭제 | 통과 | `TestSideHTTPGlobalLimitTaskWorkerAndDeletion`, `TestSideCheckpointPersistsBeforeAdmissionAndRestart` |
@@ -73,14 +73,14 @@ Codex In-app Browser로 독립 로컬 Go 서비스와 Next.js 개발 서버에 �
 
 | 시나리오 | 실제 결과 |
 | --- | --- |
-| 메인 세션이 실행 중일 때 자산·목표·표식 질문 | `redhaze.top`, 첫 페이지 읽기와 목표 요약, `BTW-REAL-0910` 반환; 사이드 완료, 16.97초 |
+| 메인 세션이 실행 중일 때 점검 대상·목표·표식 질문 | `redhaze.top`, 첫 페이지 읽기와 목표 요약, `BTW-REAL-0910` 반환; 사이드 완료, 16.97초 |
 | 메인이 첫 페이지 읽기를 끝낸 뒤 도구 근거 질문 | WebFetch 200, curl 리다이렉트 301 → 302 → 200, 페이지 제목을 정확히 인용; 7.24초 |
 | 사이드가 Bash로 테스트 파일 생성을 요구 | 실행을 거부했고 대상 파일이 만들어지지 않음; 7.74초 |
 | 완료된 사이드는 메인 컨텍스트를 바꾸지 않음 | 메인 transcript SHA-256이 메인 활동 기록과 일치; 사이드 도구 실행 횟수 0 |
-| Go 서비스를 실제로 중지 / 재시작한 뒤 이어 묻기 | 앞선 사이드 이력 3건을 유지하고, 영속 스냅샷에서 자산·표식·제목을 바로 답변했으며 메인 Agent를 재실행하지 않음 |
-| 새 세션에서 Grok 비스트리밍 설정 사용 | 자산과 `ATOMIC-0910`을 정확히 답변; 사용량 반환·저장: input 11734, output 138, cache_read 11520 |
+| Go 서비스를 실제로 중지 / 재시작한 뒤 이어 묻기 | 앞선 사이드 이력 3건을 유지하고, 저장된 스냅샷에서 점검 대상·표식·제목을 바로 답변했으며 메인 Agent를 재실행하지 않음 |
+| 새 세션에서 Grok 비스트리밍 설정 사용 | 점검 대상과 `ATOMIC-0910`을 정확히 답변; 사용량 반환·저장: input 11734, output 138, cache_read 11520 |
 
-자산 사례의 메인 세션은 WebFetch와 Bash/curl로 공개 첫 페이지를 읽었고, 착지 페이지는 `https://id.redhaze.top/home`, 제목은 `红幕科技 RedHaze Group · 全球综合集团门户`(한국어로 옮기면 "레드헤이즈 그룹 · 글로벌 종합 그룹 포털")입니다. Bash는 응답을 로컬 테스트 파일에 임시로 저장했고 원격에 쓰지는 않았습니다. 이 사실과 "사이드가 도구를 실행하지 않았다"는 항목은 따로 검증했습니다.
+점검 대상 사례의 메인 세션은 WebFetch와 Bash/curl로 공개 첫 페이지를 읽었고, 착지 페이지는 `https://id.redhaze.top/home`, 제목은 `红幕科技 RedHaze Group · 全球综合集团门户`(한국어로 옮기면 "레드헤이즈 그룹 · 글로벌 종합 그룹 포털")입니다. Bash는 응답을 로컬 테스트 파일에 임시로 저장했고 원격에 쓰지는 않았습니다. 이 사실과 "사이드가 도구를 실행하지 않았다"는 항목은 따로 검증했습니다.
 
 메인 transcript 검증값: `e7e61f135a4a120954b539f357e8c4205d7d5cd7460dcaf3dc0fd066463e1d00`.
 
@@ -88,6 +88,6 @@ Codex In-app Browser로 독립 로컬 Go 서비스와 Next.js 개발 서버에 �
 
 ## Qwen 심사
 
-심사 모델 `qwen-flash`, OpenAI 호환 인터페이스 `https://dashscope.aliyuncs.com/compatible-mode/v1`, HTTP 200. 앞의 실제 사이드 대화 3건, 메인 세션 도구 근거와 엔지니어링 단언을 제공했고 `verdict: accept`, `concerns: []`를 반환했으며, 답변이 자산·표식·페이지 읽기 증거와 일치한다고 보고 사이드의 도구 거부가 제약에 맞는다고 판단했습니다. 심사 사용량: prompt 6625, completion 312, total 6937.
+심사 모델 `qwen-flash`, OpenAI 호환 인터페이스 `https://dashscope.aliyuncs.com/compatible-mode/v1`, HTTP 200. 앞의 실제 사이드 대화 3건, 메인 세션 도구 근거와 엔지니어링 단언을 제공했고 `verdict: accept`, `concerns: []`를 반환했으며, 답변이 점검 대상·표식·페이지 읽기 증거와 일치한다고 보고 사이드의 도구 거부가 제약 조건에 맞는다고 판단했습니다. 심사 사용량: prompt 6625, completion 312, total 6937.
 
 이번 Qwen 심사 범위에는 나중에 추가된 서비스 재시작과 비스트리밍 테스트가 들어가지 않았습니다. Qwen이 말한 "쓰기 없음"은 범위가 넓습니다: 메인 세션의 curl이 실제로 로컬 응답 임시 파일을 만들었고, 이는 위에 분명히 기록했습니다. 동시성, 도구 실행 0회와 transcript 격리는 엔지니어링 단언으로 판정했고, 모델 심사는 답변 품질 평가를 보조하는 데만 썼습니다.

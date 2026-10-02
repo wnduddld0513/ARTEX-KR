@@ -96,7 +96,7 @@ function domainHostname(value: string): string | null {
 
 export function companyScopeRuleError(rule: CompanyScopeRule): string {
   const value = rule.value.trim();
-  if (!value) return "범위 값을 입력하세요";
+  if (!value) return "테스트 대상을 입력하세요";
   if (Array.from(value).length > MAX_COMPANY_SCOPE_VALUE_LENGTH) {
     return `최대 ${MAX_COMPANY_SCOPE_VALUE_LENGTH}자`;
   }

@@ -198,7 +198,7 @@ export function MentionTextarea({ value, onValueChange, onKeyDown, className, in
               value={value}
               disabled={disabled}
               className={className}
-              aria-label={props["aria-label"] ?? "메시지, @를 입력해 기록 참조"}
+              aria-label={props["aria-label"] ?? "메시지 입력, @로 기록 참조"}
               aria-autocomplete="list"
               aria-controls={open ? listId : undefined}
               aria-expanded={open}
@@ -345,7 +345,7 @@ export function MentionTextarea({ value, onValueChange, onKeyDown, className, in
               </button>
             </Badge>
           ))}
-          <span className="text-muted-foreground text-xs">전송 시 최신 상세를 읽음 · 최대 10건</span>
+          <span className="text-muted-foreground text-xs">전송할 때 최신 상세를 다시 불러옵니다 · 최대 10건</span>
         </div>
       )}
     </div>

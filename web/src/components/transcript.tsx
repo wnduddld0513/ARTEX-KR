@@ -129,7 +129,18 @@ function groupSteps(steps: Activity[], chat: boolean): Group[] {
   return out;
 }
 
-const kindLabel = (k: string) => (k === "thinking" ? "추론" : k === "result" ? "요약" : "설명");
+// 기록 종류 표시용 라벨(원본 kind 값은 그대로 두고 화면에만 한국어로 표시)
+const STEP_KIND_LABELS: Record<string, string> = {
+  tool_use: "도구 요청",
+  tool_result: "실행 결과",
+  text: "응답",
+  thinking: "추론",
+  result: "요약",
+  round: "라운드",
+  user: "사용자 메시지",
+  intent: "탐색 계획",
+};
+const kindLabel = (k: string) => STEP_KIND_LABELS[k] ?? k;
 
 function ActivityTime({ ts }: { ts: string }) {
   const date = new Date(ts);
@@ -382,7 +393,7 @@ function ToolBlock({
   const rawCmd =
     use && use.summary.startsWith(toolName) ? use.summary.slice(toolName.length).trimStart() : (use?.summary ?? "");
   const cmd = toolInputText(toolName, rawCmd);
-  // status only — the full result lives behind the expand (【输出】), not previewed inline
+  // status only — the full result lives behind the expand ([출력]), not previewed inline
   const statusText = running ? "실행 중…" : ok ? "✓" : "✕ 실패";
 
   // key over the seqs we'd load; changes when the result (or command) arrives.
@@ -403,7 +414,7 @@ function ToolBlock({
       if (!live) return;
       setDetail(
         segs
-          .map((x, i) => `【${x.label}】\n${x.label === "명령" ? toolInputText(toolName, parts[i]) : parts[i]}`)
+          .map((x, i) => `[${x.label}]\n${x.label === "명령" ? toolInputText(toolName, parts[i]) : parts[i]}`)
           .join("\n\n"),
       );
       loadedKey.current = detailKey;
@@ -514,7 +525,7 @@ function MessageBlock({
       ),
     ).then((parts) => {
       if (!live) return;
-      setDetail(group.steps.map((s, i) => `【${kindLabel(s.kind)}】\n${parts[i]}`).join("\n\n"));
+      setDetail(group.steps.map((s, i) => `[${kindLabel(s.kind)}]\n${parts[i]}`).join("\n\n"));
       loadedKey.current = detailKey;
     });
     return () => {

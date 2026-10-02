@@ -81,6 +81,16 @@ jobs:
     needs: binaries
     runs-on: ubuntu-latest
     steps:
+      # Preserve releases already published from verified local build artifacts.
+      - uses: actions/github-script@v7
+        id: existing
+        with:
+          script: |
+            const tag = context.ref.replace('refs/tags/', '');
+            const { data } = await github.rest.repos.listReleases({
+              ...context.repo, per_page: 100
+            });
+            core.setOutput('exists', data.some(release => release.tag_name === tag));
       - uses: actions/download-artifact@v4
         with:
           pattern: pkg-*
@@ -90,6 +100,7 @@ jobs:
         working-directory: dist
         run: sha256sum *.zip > SHA256SUMS
       - uses: softprops/action-gh-release@v2
+        if: steps.existing.outputs.exists != 'true'
         with:
           files: |
             dist/*.zip
@@ -99,6 +110,8 @@ jobs:
   # ④ 多架构镜像 → 推 Docker Hub（复用 binaries 编好的 Linux 二进制，
   #    镜像里只装工具 + 放二进制；arm64 仅需模拟 apt 层，构建快很多）
   docker:
+    # Fork releases must never publish to the upstream Docker Hub repository.
+    if: github.repository_owner == 'Autumn-27'
     needs: binaries
     runs-on: ubuntu-latest
     steps:

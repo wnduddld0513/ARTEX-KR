@@ -73,7 +73,7 @@ export function RetestsTab({ taskId }: { taskId: string }) {
       {error ? (
         <Alert variant="destructive">
           <AlertDescription>
-            작업 취약점 로드 실패: {error}
+            작업 취약점을 불러오지 못했습니다: {error}
             <Button variant="outline" size="sm" onClick={refresh}>
               재시도
             </Button>
@@ -84,7 +84,7 @@ export function RetestsTab({ taskId }: { taskId: string }) {
         <Card className="min-w-0">
           <CardHeader>
             <CardTitle>취약점 선택{data ? ` · ${data.total}` : ""}</CardTitle>
-            <CardDescription>이 작업 취약점의 재테스트 기록을 확인하거나 새 재테스트를 시작하세요.</CardDescription>
+            <CardDescription>이 작업에서 발견된 취약점의 재검증 기록을 확인하거나 새 재검증을 시작하세요.</CardDescription>
           </CardHeader>
           <CardContent className="flex max-h-[32rem] flex-col overflow-y-auto">
             {!loaded && !error ? <Skeleton className="h-24 w-full" /> : null}
@@ -109,8 +109,8 @@ export function RetestsTab({ taskId }: { taskId: string }) {
             {loaded && findings.length === 0 ? (
               <Empty>
                 <EmptyHeader>
-                  <EmptyTitle>재테스트할 취약점 없음</EmptyTitle>
-                  <EmptyDescription>이 작업에서 취약점이 발견되면 여기서 수동으로 재테스트를 시작할 수 있습니다.</EmptyDescription>
+                  <EmptyTitle>재검증할 취약점 없음</EmptyTitle>
+                  <EmptyDescription>이 작업에서 취약점이 발견되면 여기서 수동으로 재검증을 시작할 수 있습니다.</EmptyDescription>
                 </EmptyHeader>
               </Empty>
             ) : null}
@@ -127,7 +127,7 @@ export function RetestsTab({ taskId }: { taskId: string }) {
                 <ChevronLeftIcon />
               </Button>
               <span className="text-muted-foreground text-xs">
-                페이지  {page} / {Math.ceil(data.total / PAGE_SIZE)}
+                페이지 {page} / {Math.ceil(data.total / PAGE_SIZE)}
               </span>
               <Button
                 variant="outline"

@@ -115,10 +115,10 @@ function MatchCell({ row, showReason = true }: { row: InterceptApprovalRow; show
       {source(row) === "model" ? (
         <Badge variant="outline">
           <BotIcon />
-          모델 판정
+          모델 승인
         </Badge>
       ) : (
-        <span className="truncate">{row.rule_name || "규칙이 기록되지 않았거나 삭제됨"}</span>
+        <span className="truncate" title={row.rule_name || undefined}>{row.rule_name || "규칙이 기록되지 않았거나 삭제됨"}</span>
       )}
       {showReason ? (
         <p className="truncate text-muted-foreground text-xs" title={reason}>
@@ -158,10 +158,10 @@ function CodeBlock({ label, text, truncated = false }: { label: string; text: st
 
 const contextLabels: Record<string, string> = {
   user: "사용자 메시지",
-  assistant: "Agent 메시지",
-  text: "Agent 메시지",
+  assistant: "에이전트 메시지",
+  text: "에이전트 메시지",
   tool_use: "도구 요청",
-  tool_result: "도구 출력",
+  tool_result: "실행 결과",
 };
 
 const actionLabels: Record<string, string> = { allow: "허용", ask: "수동 승인으로 전환", deny: "거부" };
@@ -192,14 +192,14 @@ function ModelReviewContext({ input }: { input: InterceptReviewInput }) {
         input.background ? (
           <div className="flex min-w-0 flex-col gap-2">
             <CodeBlock
-              label={input.background.source === "user_message" ? "배경 · 사용자 메시지" : "배경 · Worker 의도 요약(구버전)"}
+              label={input.background.source === "user_message" ? "배경 · 사용자 메시지" : "배경 · 실행 에이전트 탐색 계획 요약(구버전)"}
               text={input.background.text}
               truncated={input.background.truncated}
             />
             <p className="text-muted-foreground text-xs">
               {input.background.source === "user_message"
                 ? "현재 사용자 메시지에서 가져왔습니다."
-                : "구버전에서 전송된 Worker 의도 요약입니다. 새 Worker 검토에서는 이 내용을 전송하지 않습니다."}
+                : "구버전에서 전송된 실행 에이전트 탐색 계획 요약입니다. 새 실행 에이전트 검토에서는 이 내용을 전송하지 않습니다."}
             </p>
           </div>
         ) : (
@@ -214,11 +214,11 @@ function ModelReviewContext({ input }: { input: InterceptReviewInput }) {
             <>
               <CodeBlock label="작업 설명(구버전)" text={input.task.description} truncated={input.task.truncated} />
               <CodeBlock label="작업 목표(구버전)" text={input.task.goal} truncated={input.task.truncated} />
-              <CodeBlock label="작업 동작 제약(구버전)" text={JSON.stringify(input.task.constraints, null, 2)} />
+              <CodeBlock label="작업 규칙(구버전)" text={JSON.stringify(input.task.constraints, null, 2)} />
             </>
           ) : null}
           {input.worker_intent ? (
-            <CodeBlock label="Worker 의도(구버전)" text={input.worker_intent} truncated={input.background_truncated} />
+            <CodeBlock label="실행 에이전트 탐색 계획(구버전)" text={input.worker_intent} truncated={input.background_truncated} />
           ) : null}
         </>
       )}
@@ -341,7 +341,7 @@ export function ApprovalDetail({
       <div className="grid min-w-0 gap-5 rounded-xl border bg-muted/20 p-4 lg:grid-cols-2">
         <div className="flex min-w-0 flex-col gap-3">
           <CodeBlock
-            label={`${current.agent_name || current.conv_agent_key || "Agent"} · 도구 요청`}
+            label={`${current.agent_name || current.conv_agent_key || "에이전트"} · 도구 요청`}
             text={JSON.stringify(row.tool_input ?? {}, null, 2)}
           />
           {command ? (
@@ -363,7 +363,7 @@ export function ApprovalDetail({
         </div>
         <div className="flex min-w-0 flex-col gap-4 lg:border-l lg:pl-5">
           <h3 className="font-medium text-muted-foreground text-xs">
-            {current.status === "pending" ? "검토 상태" : "승인 판정"}
+            {current.status === "pending" ? "검토 상태" : "승인 결과"}
           </h3>
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge status={current.status} />
@@ -414,7 +414,7 @@ export function ApprovalDetail({
       {!detail && !error ? <Skeleton className="h-8 w-60" /> : null}
       {detail && !audit ? (
         <Alert>
-          <AlertDescription>이 기록에는 승인 상세 스냅샷이 저장되지 않아 당시 컨텍스트, 모델 1차 판정, 실행 출력을 복원할 수 없습니다.</AlertDescription>
+          <AlertDescription>이 기록에는 승인 상세 스냅샷이 저장되지 않아 실행 당시 상황, 모델 1차 판정, 실행 출력을 복원할 수 없습니다.</AlertDescription>
         </Alert>
       ) : null}
       {audit ? (
@@ -434,7 +434,7 @@ export function ApprovalDetail({
                   <AlertDescription>
                     {audit.model_input_digest
                       ? "이 이전 기록은 검토 입력 지문만 저장하고 입력 원문은 저장하지 않아 당시 모델에 전송된 컨텍스트를 복원할 수 없습니다. 검토 시 컨텍스트가 없었다는 뜻은 아니며, 새로 생성되는 모델 판정은 입력 스냅샷을 보존합니다."
-                      : "이 기록에는 모델 검토 입력이 저장되지 않았습니다. 규칙이 직접 판정했거나, 모델 호출 전에 오류가 발생했거나, 구버전에서 생성되었을 수 있습니다."}
+                      : "이 기록에는 모델 검토 입력이 저장되지 않았습니다. 규칙에 따라 바로 결정되었거나, 모델 호출 전에 오류가 발생했거나, 구버전에서 생성되었을 수 있습니다."}
                   </AlertDescription>
                 </Alert>
               )}
@@ -567,8 +567,8 @@ function ApprovalTable({
           <TableHead className="hidden w-14 sm:table-cell">#</TableHead>
           <TableHead className="w-28">도구</TableHead>
           <TableHead className="hidden md:table-cell">출처</TableHead>
-          <TableHead className="hidden lg:table-cell">일치 규칙</TableHead>
-          <TableHead className="hidden xl:table-cell">인자</TableHead>
+          <TableHead className="hidden lg:table-cell">적용된 규칙</TableHead>
+          <TableHead className="hidden xl:table-cell">요청 내용</TableHead>
           <TableHead className="w-24">상태</TableHead>
           <TableHead className="hidden w-36 lg:table-cell">요청 시간</TableHead>
           <TableHead className="hidden w-36 xl:table-cell">결정 시간</TableHead>
@@ -789,7 +789,7 @@ export function ApprovalRecords({ taskId }: { taskId?: string }) {
           새로 고침
         </Button>
       </div>
-      <p className="text-muted-foreground text-sm">기록을 펼쳐 도구 요청과 승인 판정, 당시 컨텍스트와 실행 결과를 확인하세요.</p>
+      <p className="text-muted-foreground text-sm">기록을 펼쳐 도구 요청과 승인 결과, 실행 당시 상황과 실행 결과를 확인하세요.</p>
       <FieldGroup className="flex-row flex-wrap items-end gap-3" aria-label="승인 기록 필터">
         <Field className="w-full sm:w-40">
           <FieldLabel htmlFor={`${filterID}-status`}>승인 상태</FieldLabel>
@@ -817,7 +817,7 @@ export function ApprovalRecords({ taskId }: { taskId?: string }) {
           </Select>
         </Field>
         <Field className="w-full sm:w-40">
-          <FieldLabel htmlFor={`${filterID}-source`}>판정 출처</FieldLabel>
+          <FieldLabel htmlFor={`${filterID}-source`}>승인 방식</FieldLabel>
           <Select
             value={filter.decision_source ?? "all"}
             onValueChange={(value) =>
@@ -832,10 +832,10 @@ export function ApprovalRecords({ taskId }: { taskId?: string }) {
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectItem value="all">전체 출처</SelectItem>
-                <SelectItem value="model">모델 판정</SelectItem>
-                <SelectItem value="rule">규칙 판정</SelectItem>
-                <SelectItem value="unknown">출처 알 수 없음</SelectItem>
+                <SelectItem value="all">전체 방식</SelectItem>
+                <SelectItem value="model">모델 판단</SelectItem>
+                <SelectItem value="rule">규칙 판단</SelectItem>
+                <SelectItem value="unknown">알 수 없음</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -885,7 +885,7 @@ export function ApprovalRecords({ taskId }: { taskId?: string }) {
               <EmptyTitle>{filtered ? "필터 조건에 맞는 승인 기록이 없습니다" : "승인 기록 없음"}</EmptyTitle>
               <EmptyDescription>
                 {filtered
-                  ? "승인 상태나 판정 출처를 조정하거나 필터를 지워 전체 기록을 확인하세요."
+                  ? "승인 상태나 승인 방식을 조정하거나 필터를 지워 전체 기록을 확인하세요."
                   : "규칙이나 모델이 승인을 결정하면 기록이 여기에 표시됩니다."}
               </EmptyDescription>
             </EmptyHeader>

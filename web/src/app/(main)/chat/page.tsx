@@ -250,7 +250,7 @@ function Composer({
           onKeyDown={onKeyDown}
         />
         {running && allowBtw && isBtwCommand(value) && (
-          <Button size="icon" onClick={onSend} aria-label="사이드 질문 보내기" title="사이드 질문 보내기">
+          <Button size="icon" onClick={onSend} aria-label="추가 질문 보내기" title="추가 질문 보내기">
             <ArrowUpIcon />
           </Button>
         )}
@@ -772,7 +772,7 @@ function ChatView({
           </Badge>
         )}
         {agent?.description && (
-          <span className="text-muted-foreground min-w-0 truncate text-xs">{agent.description}</span>
+          <span className="text-muted-foreground min-w-0 text-xs break-words">{agent.description}</span>
         )}
         {running && <LiveBadge />}
         <SideQuestionButton side={side} />
@@ -933,7 +933,7 @@ const ConversationItem = React.memo(function ConversationItem({
         >
           <div className="flex min-w-0 items-center gap-1.5">
             {pinned && <PinIcon className="text-primary size-3 shrink-0" aria-label="고정됨" />}
-            <div className="truncate text-sm">{conv.title || "새 대화"}</div>
+            <div className="truncate text-sm" title={conv.title || "새 대화"}>{conv.title || "새 대화"}</div>
             {conv.running ? (
               <Badge variant="secondary" className="shrink-0 gap-1" title="에이전트 실행 중">
                 <Spinner className="size-3" aria-hidden="true" />
@@ -945,7 +945,7 @@ const ConversationItem = React.memo(function ConversationItem({
             {showAgent && (
               <>
                 <Bot className="size-3 shrink-0" />
-                <span className="min-w-0 truncate">{agent?.name ?? conv.agent_key}</span>
+                <span className="min-w-0 truncate" title={agent?.name ?? conv.agent_key}>{agent?.name ?? conv.agent_key}</span>
                 <span className="shrink-0">·</span>
               </>
             )}
@@ -1299,8 +1299,8 @@ export default function ChatPage() {
       if (failed.length > 0) {
         const details = failed
           .slice(0, 3)
-          .map((item) => `#${item.id}（${item.error}）`)
-          .join("；");
+          .map((item) => `#${item.id}(${item.error})`)
+          .join(", ");
         toast.error(`대화 ${failed.length}개 삭제 실패: ${details}${failed.length > 3 ? " 등" : ""}`);
       }
       setBulkDeleteOpen(false);
@@ -1375,7 +1375,7 @@ export default function ChatPage() {
                   <SelectItem value="all">모든 에이전트</SelectItem>
                   {agentFilterOptions.map((agent) => (
                     <SelectItem key={agent.key} value={`agent:${agent.key}`}>
-                      {agent.name}（{agent.count}）
+                      {agent.name} ({agent.count})
                     </SelectItem>
                   ))}
                 </SelectGroup>

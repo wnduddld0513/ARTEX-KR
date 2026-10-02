@@ -12,10 +12,10 @@ import { cn } from "@/lib/utils";
 const MOCK_LOGS: LogLine[] = [
   { seq: 1, ts: "2026-07-26T03:55:00Z", level: "info", tag: "engine", text: "ARTEX v0.1.0 backend listening on :8787 (workers=3)" },
   { seq: 2, ts: "2026-07-26T03:55:01Z", level: "info", tag: "config", text: "LLM configured from DB: anthropic / claude-opus-4-8" },
-  { seq: 3, ts: "2026-07-26T03:56:10Z", level: "info", tag: "planner", text: "task t-acme-web: 3차 계획 수립, 인텐트 i-4 생성" },
-  { seq: 4, ts: "2026-07-26T03:57:00Z", level: "warn", tag: "guard", text: "block bash: 대상이 범위를 벗어남 — out.evil.example은 scope 밖" },
+  { seq: 3, ts: "2026-07-26T03:56:10Z", level: "info", tag: "planner", text: "task t-acme-web: 3차 계획 수립, 탐색 계획 i-4 생성" },
+  { seq: 4, ts: "2026-07-26T03:57:00Z", level: "warn", tag: "guard", text: "block bash: 대상이 테스트 범위를 벗어남 — out.evil.example은 테스트 대상이 아님" },
   { seq: 5, ts: "2026-07-26T03:57:30Z", level: "info", tag: "work#1", text: "report_finding: Default Credentials (high) 저장됨" },
-  { seq: 6, ts: "2026-07-26T03:58:20Z", level: "error", tag: "work#3", text: "intercept: mysqldump이 파괴적 규칙에 매칭되어 수동 승인 대기 중" },
+  { seq: 6, ts: "2026-07-26T03:58:20Z", level: "error", tag: "work#3", text: "intercept: mysqldump이 파괴적 규칙에 매칭되어 사용자 승인 대기 중" },
 ];
 
 const levelTone: Record<LogLine["level"], string> = {
@@ -178,7 +178,7 @@ export default function LogsPage() {
             비우기
           </Button>
           <span className="ml-auto text-xs text-muted-foreground">
-            {counts.total} 행 ·{" "}
+            {counts.total}행 ·{" "}
             <span className="text-amber-600 dark:text-amber-400">{counts.warn} 경고</span> ·{" "}
             <span className="text-red-600 dark:text-red-400">{counts.error} 오류</span>
           </span>

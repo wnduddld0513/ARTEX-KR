@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 // ── DSL autocomplete ──────────────────────────────────────────────────────────
-// 전역 자산 보기(/function/assets)와 작업별 테스트 자산
-// search, so both search boxes behave and look identical.
+// 전역 점검 대상 보기(/function/assets)와 작업별 테스트 대상 검색이 함께 쓰이므로,
+// 두 검색창의 동작과 모양이 동일해야 합니다.
 
 const DSL_FIELDS: { name: string; desc: string; ops: { op: string; desc: string }[] }[] = [
   {

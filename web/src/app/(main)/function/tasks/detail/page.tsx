@@ -55,10 +55,10 @@ const TABS = [
   { value: "overview", label: "개요" },
   { value: "graph", label: "탐색 경로" },
   { value: "broadcast", label: "브리핑 보드" },
-  { value: "findings", label: "발견" },
-  { value: "retests", label: "재테스트" },
-  { value: "assets", label: "테스트 자산" },
-  { value: "coverage", label: "자산 커버리지 맵" },
+  { value: "findings", label: "취약점" },
+  { value: "retests", label: "재검증" },
+  { value: "assets", label: "점검 대상" },
+  { value: "coverage", label: "점검 대상 커버리지 맵" },
   { value: "intercept", label: "차단 승인" },
   { value: "report", label: "보고서" },
 ];
@@ -92,15 +92,15 @@ function TaskLLMControl({ task, profiles, onUpdated }: { task: Task; profiles: L
   if (task.active_llm_profile_id) activeID = String(task.active_llm_profile_id);
   const activeProfile = profiles.find((profile) => profile.id === activeID);
   const currentLabel = exhausted
-    ? "구성 체인 소진됨"
+    ? "구성 모두 소진됨"
     : (activeProfile?.name ?? (activeID ? `구성 #${activeID}` : "기본 구성 사용"));
   const activeIndex = chain.indexOf(activeID);
   const backupCount = activeIndex >= 0 ? Math.max(0, chain.length - activeIndex - 1) : 0;
-  const currentTitle = [currentLabel, activeProfile?.model, backupCount > 0 ? `${backupCount}개 예비` : ""]
+  const currentTitle = [currentLabel, activeProfile?.model, backupCount > 0 ? `대체 구성 ${backupCount}개` : ""]
     .filter(Boolean)
     .join(" · ");
   let editorDescription = "순서나 현재 구성을 변경하면 다음 LLM 호출부터 적용됩니다.";
-  if (terminal) editorDescription = "작업이 종료되었습니다. 변경 사항은 이후 메인 Agent 대화에만 적용됩니다.";
+  if (terminal) editorDescription = "작업이 종료되었습니다. 변경 사항은 이후 메인 에이전트 대화에만 적용됩니다.";
   let saveLabel = "저장";
   if (exhausted) saveLabel = "저장 후 재설정";
   if (saving) saveLabel = "저장 중";
@@ -134,7 +134,7 @@ function TaskLLMControl({ task, profiles, onUpdated }: { task: Task; profiles: L
       } else {
         toast.success(
           result.reopened_intents > 0
-            ? `LLM 구성이 업데이트되었고, 할당량 차단 의도 ${result.reopened_intents}개가 복구되었습니다`
+            ? `LLM 구성이 업데이트되었고, 할당량으로 차단된 탐색 계획 ${result.reopened_intents}개가 복구되었습니다`
             : "LLM 구성이 업데이트되었습니다",
         );
       }
@@ -163,16 +163,16 @@ function TaskLLMControl({ task, profiles, onUpdated }: { task: Task; profiles: L
       </PopoverTrigger>
       <PopoverContent ref={popoverContentRef} align="start" className="w-[min(28rem,calc(100vw-2rem))] gap-4 p-4">
         <PopoverHeader>
-          <PopoverTitle>작업 LLM 구성 체인</PopoverTitle>
+          <PopoverTitle>작업 LLM 구성 목록</PopoverTitle>
           <PopoverDescription>{editorDescription}</PopoverDescription>
         </PopoverHeader>
 
         {exhausted && (
           <Alert variant="destructive">
             <CircleAlertIcon />
-            <AlertTitle>구성 체인 할당량 소진됨</AlertTitle>
+            <AlertTitle>모든 구성의 할당량 소진됨</AlertTitle>
             <AlertDescription>
-              {task.llm_failover_reason ?? "선택한 모든 구성의 할당량이 부족한 것으로 판단되었습니다. 구성 체인을 저장하면 장애 상태가 재설정됩니다."}
+              {task.llm_failover_reason ?? "선택한 모든 구성의 할당량이 부족한 것으로 판단되었습니다. 구성을 저장하면 오류 상태가 재설정됩니다."}
             </AlertDescription>
           </Alert>
         )}
@@ -283,7 +283,7 @@ function TaskDetailInner() {
       setPaused(next);
       toast.success(next ? "탐색을 일시정지했습니다" : "탐색을 재개했습니다");
     } catch (e) {
-      toast.error("작업 실패: " + (e as Error).message);
+      toast.error("처리하지 못했습니다: " + (e as Error).message);
     }
   }
 
@@ -303,7 +303,7 @@ function TaskDetailInner() {
   if (!task) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 p-10 text-center">
-        <p className="text-muted-foreground">{loaded ? `작업 ${id}이(가) 삭제되었거나 아카이브되었거나 존재하지 않습니다` : "로드 중…"}</p>
+        <p className="text-muted-foreground">{loaded ? `작업 ${id}을(를) 찾을 수 없습니다. 삭제되었거나 아카이브되었을 수 있습니다` : "불러오는 중…"}</p>
         {loaded && (
           <Button asChild variant="outline">
             <Link href="/function/tasks">
@@ -321,7 +321,7 @@ function TaskDetailInner() {
   const canArchive = archiveLifecycleEligible && !task.archive_blocked_by_task_id;
   let archiveDisabledReason = task.queued ? "대기 중인 작업은 먼저 일시정지해야 합니다" : "실행 중인 작업은 먼저 일시정지해야 합니다";
   if (archiveLifecycleEligible && task.archive_blocked_by_task_id) {
-    archiveDisabledReason = `아카이브되지 않은 작업 #${task.archive_blocked_by_task_id}에서 직접 상속되었습니다. 종속 작업을 먼저 아카이브하세요`;
+    archiveDisabledReason = `아카이브되지 않은 작업 #${task.archive_blocked_by_task_id}이(가) 이 작업을 직접 상속하고 있습니다. 해당 작업을 먼저 아카이브해야 합니다`;
   }
   const engineMode = paused ? "paused" : (task.engine_mode ?? "idle");
   let controlVariant: "default" | "secondary" | "outline" = "outline";
@@ -372,9 +372,9 @@ function TaskDetailInner() {
               <AlertDialogTrigger asChild>{archiveTrigger}</AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>작업 #{task.id} 아카이브할까요?</AlertDialogTitle>
+                  <AlertDialogTitle>작업 #{task.id}을(를) 아카이브할까요?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    작업 그래프, 관련 기록, 전용 자산과 트래픽, 작업 파일 및 LLM 기록이 콜드 스토리지로 압축됩니다. 아카이브가 완료되면 작업 목록의 '아카이브됨' 탭에서 복원할 수 있습니다.
+                    작업 그래프, 관련 기록, 전용 점검 대상과 트래픽, 작업 파일 및 LLM 기록이 콜드 스토리지로 압축됩니다. 아카이브가 완료되면 작업 목록의 '아카이브됨' 탭에서 복원할 수 있습니다.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

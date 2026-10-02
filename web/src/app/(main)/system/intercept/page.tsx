@@ -131,7 +131,7 @@ const defaultForm = (): RuleForm => ({
 function ActionBadge({ action }: { action: InterceptAction }) {
   if (action === "allow") return <Badge variant="secondary">허용</Badge>;
   if (action === "deny")  return <Badge variant="destructive">금지</Badge>;
-  return <Badge variant="outline" className="border-amber-400 text-amber-600">요청</Badge>;
+  return <Badge variant="outline" className="border-amber-400 text-amber-600">승인 요청</Badge>;
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -172,7 +172,7 @@ function JudgeCard() {
       setCfg(j);
       setProfiles(ps);
     } catch (e) {
-      toast.error("모델 폴백 설정을 불러오지 못했습니다: " + (e as Error).message);
+      toast.error("모델 보조 판정 설정을 불러오지 못했습니다: " + (e as Error).message);
     } finally {
       setLoading(false);
     }
@@ -190,7 +190,7 @@ function JudgeCard() {
     setSaving(true);
     try {
       await api.interceptSetJudgeConfig(cfg);
-      toast.success("모델 폴백 설정이 저장되었습니다");
+      toast.success("모델 보조 판정 설정을 저장했습니다");
       await load(); // 回读:提示词若清空则回填内置模板
     } catch (e) {
       toast.error("저장 실패: " + (e as Error).message);
@@ -225,9 +225,9 @@ function JudgeCard() {
         <div className="flex items-center gap-2.5">
           <BotIcon className={`h-5 w-5 shrink-0 ${cfg.enabled ? "text-violet-600" : "text-muted-foreground"}`} />
           <div>
-            <p className="text-sm font-semibold leading-tight">모델 폴백 승인</p>
+            <p className="text-sm font-semibold leading-tight">모델 보조 판정</p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              <span className="font-medium text-foreground">차단 범위</span> 안에 있고 <span className="font-medium text-foreground">어떤 차단 규칙에도 걸리지 않은</span> 명령만 모델이 의미를 판단합니다(허용 / 수동 승인 / 차단)
+              <span className="font-medium text-foreground">차단 범위</span> 안에 있고 <span className="font-medium text-foreground">어떤 차단 규칙에도 걸리지 않은</span> 명령만 모델이 의미를 판단합니다(허용 / 사용자 승인 / 차단)
             </p>
           </div>
         </div>
@@ -258,7 +258,7 @@ function JudgeCard() {
                 placeholder="비워두면 내장 템플릿 사용"
                 spellCheck={false}
               />
-              <p className="text-right text-[11px] text-muted-foreground">{cfg.prompt.length} 자</p>
+              <p className="text-right text-[11px] text-muted-foreground">{cfg.prompt.length}자</p>
             </CardContent>
           </Card>
 
@@ -296,7 +296,7 @@ function JudgeCard() {
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="allow">허용</SelectItem>
-                      <SelectItem value="ask">수동 승인으로 전환</SelectItem>
+                      <SelectItem value="ask">사용자 승인으로 전환</SelectItem>
                       <SelectItem value="deny">차단</SelectItem>
                     </SelectContent>
                   </Select>
@@ -306,7 +306,7 @@ function JudgeCard() {
               <Separator />
 
               <div className="space-y-4">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">수동 승인(모델이 '수동 전환'으로 판정했을 때)</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">사용자 승인(모델이 '사용자 승인'으로 판정했을 때)</p>
                 <Field label="승인 대기 타임아웃(초)">
                   <Input
                     type="number"
@@ -425,8 +425,8 @@ export default function InterceptPage() {
   }
 
   async function handleSave() {
-    if (!form.name.trim())    { toast.error("이름을 입력해야 합니다"); return; }
-    if (!form.pattern.trim()) { toast.error("패턴을 입력해야 합니다"); return; }
+    if (!form.name.trim())    { toast.error("이름을 입력하세요"); return; }
+    if (!form.pattern.trim()) { toast.error("패턴을 입력하세요"); return; }
     if (regexErr)             { toast.error("정규식 문법이 올바르지 않습니다"); return; }
     setSaving(true);
     try {
@@ -475,7 +475,7 @@ export default function InterceptPage() {
       setAllTools(tools);
       setEnabledTools(new Set(cfg.enabled_tools));
     } catch (e) {
-      toast.error("불러오지 못했습니다: " + (e as Error).message);
+      toast.error("도구 목록을 불러오지 못했습니다: " + (e as Error).message);
     } finally {
       setScopeLoading(false);
     }
@@ -516,7 +516,7 @@ export default function InterceptPage() {
         <div>
           <h1 className="text-lg font-semibold leading-tight">명령 차단</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            도구 실행 전에 차단 규칙으로 먼저 매칭하며, 매칭되지 않은 명령은 모델 폴백 판정으로 넘길 수 있습니다
+            도구를 실행하기 전에 차단 규칙을 먼저 확인하며, 어느 규칙에도 매칭되지 않은 명령은 모델 보조 판정으로 넘길 수 있습니다
           </p>
         </div>
       </div>
@@ -534,11 +534,11 @@ export default function InterceptPage() {
           <span className="shrink-0 font-medium">차단 범위</span>
           {scopeTools.length === 0 ? (
             <span className="text-amber-700 dark:text-amber-500">
-              사용 중인 도구가 없습니다 — 차단 규칙과 모델 폴백 모두 적용되지 않습니다
+              차단 대상으로 지정된 도구가 없습니다 — 차단 규칙과 모델 보조 판정 모두 적용되지 않습니다
             </span>
           ) : (
             <>
-              <Badge variant="secondary" className="shrink-0">{scopeTools.length} 개 도구</Badge>
+              <Badge variant="secondary" className="shrink-0">{scopeTools.length}개 도구</Badge>
               <span className="truncate text-muted-foreground" title={scopeTools.join(", ")}>
                 {scopeTools.join(", ")}
               </span>
@@ -559,14 +559,14 @@ export default function InterceptPage() {
       <Tabs defaultValue="rules" className="flex-1">
         <TabsList>
           <TabsTrigger value="rules">차단 규칙</TabsTrigger>
-          <TabsTrigger value="judge">모델 설정</TabsTrigger>
+          <TabsTrigger value="judge">모델 보조 판정</TabsTrigger>
         </TabsList>
 
         {/* ---- tab: 拦截规则 ---- */}
         <TabsContent value="rules" className="mt-4 flex flex-col gap-4">
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs text-muted-foreground">
-              우선순위(숫자가 클수록 먼저) 순서로 규칙을 하나씩 매칭하며, 처음 매칭된 규칙이 적용됩니다
+              우선순위(숫자가 클수록 먼저) 순서대로 규칙을 하나씩 확인하며, 처음 매칭된 규칙이 적용됩니다
             </p>
             <Button onClick={openNew} size="sm" className="shrink-0">
               <PlusIcon className="h-4 w-4" />
@@ -730,7 +730,7 @@ export default function InterceptPage() {
                 <p className="text-xs text-destructive mt-1">{regexErr}</p>
               )}
               {regexWarn && (
-                <p className="text-xs text-amber-600 mt-1">Go RE2 확장 문법(예:  <code className="font-mono">(?i)</code>)을 포함합니다. 브라우저에서는 미리 볼 수 없고 제출 후 서버에서 검증합니다</p>
+                <p className="text-xs text-amber-600 mt-1">Go RE2 확장 문법(예: <code className="font-mono">(?i)</code>)을 포함합니다. 브라우저에서는 미리 검증할 수 없으므로 제출 후 서버에서 검증합니다</p>
               )}
             </Field>
 
@@ -745,7 +745,7 @@ export default function InterceptPage() {
                 <SelectContent>
                   <SelectItem value="allow">허용 — 그대로 통과시키고 이후 규칙은 건너뜀</SelectItem>
                   <SelectItem value="deny">금지 — 차단하고 모델에 거부 메시지를 반환</SelectItem>
-                  <SelectItem value="ask">사용자 요청 — 승인 대기</SelectItem>
+                  <SelectItem value="ask">승인 요청 — 사용자 승인 대기</SelectItem>
                 </SelectContent>
               </Select>
             </Field>
@@ -768,7 +768,7 @@ export default function InterceptPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium">승인 타임아웃 사용</p>
-                    <p className="text-xs text-muted-foreground">타임아웃 후 자동 처리하며 더 기다리지 않습니다</p>
+                    <p className="text-xs text-muted-foreground">타임아웃되면 자동으로 처리하고 더 기다리지 않습니다</p>
                   </div>
                   <Switch
                     checked={form.timeout_enabled}
@@ -836,7 +836,7 @@ export default function InterceptPage() {
               차단 범위
             </DialogTitle>
             <DialogDescription className="text-xs">
-              차단을 사용하는 도구만 규칙 매칭 대상이며, 나머지 도구는 그대로 통과합니다
+              차단 대상으로 지정한 도구만 규칙 매칭을 거치며, 나머지 도구는 그대로 통과합니다
             </DialogDescription>
           </DialogHeader>
 

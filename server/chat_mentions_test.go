@@ -41,6 +41,10 @@ func TestChatMentionParsing(t *testing.T) {
 }
 
 func TestKoreanChatMentionParsing(t *testing.T) {
+	assets, assetErr := parseChatMentions("@[점검 대상#7 example.com] @[자산#7 이전 기록] @[资产#7 원본 기록]")
+	if assetErr != nil || len(assets) != 1 || assets[0].Kind != "asset" || assets[0].ID != 7 {
+		t.Fatalf("asset refs=%+v err=%v", assets, assetErr)
+	}
 	refs, err := parseChatMentions("@[취약점#12 한국어] @[漏洞#12 기존 기록] @[API#34 GET /api] @[하위 도메인#56 example.com]")
 	if err != nil || len(refs) != 3 || refs[0].Kind != "finding" || refs[1].Kind != "endpoint" || refs[2].Kind != "subdomain" {
 		t.Fatalf("refs=%+v err=%v", refs, err)

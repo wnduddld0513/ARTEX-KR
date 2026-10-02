@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import type { AssetInterceptKind, AssetInterceptRuleInput } from "@/lib/types";
 
-// shadcn Select 대신 NativeSelect(네이티브 <select>)를 사용합니다. 이 편집기는 Sheet 서랍 안에서 쓰이는데,
-// shadcn Select의 드롭다운은 body로 portal되어 외부 클릭 시 서랍의 「외부 클릭 닫기」가 잘못 동작합니다. 네이티브 드롭다운에는 이 문제가 없습니다.
+// shadcn Select 대신 NativeSelect(네이티브 <select>)를 사용합니다. 이 편집기는 Sheet 안에서 쓰이는데,
+// shadcn Select의 드롭다운은 body로 portal되어 바깥을 클릭할 때 시트가 잘못 닫힙니다. 네이티브 드롭다운에는 이 문제가 없습니다.
 export const ASSET_INTERCEPT_KIND_OPTIONS: {
   value: AssetInterceptKind;
   label: string;
@@ -49,7 +49,7 @@ export function AssetInterceptRulesEditor({
         const ph = ASSET_INTERCEPT_KIND_OPTIONS.find((o) => o.value === r.kind)?.placeholder ?? "";
         return (
           // biome-ignore lint/suspicious/noArrayIndexKey: 행에 안정적인 id가 없어 인덱스로 관리합니다
-          <div key={i} className="flex items-center gap-2">
+          <div key={i} className="flex flex-wrap items-center gap-2">
             <NativeSelect
               size="sm"
               className="w-[84px] shrink-0"
@@ -61,7 +61,7 @@ export function AssetInterceptRulesEditor({
             </NativeSelect>
             <NativeSelect
               size="sm"
-              className="w-[120px] shrink-0"
+              className="w-[11rem] shrink-0"
               value={r.kind}
               onChange={(e) => update(i, { kind: e.target.value as AssetInterceptKind })}
             >
@@ -72,7 +72,7 @@ export function AssetInterceptRulesEditor({
               ))}
             </NativeSelect>
             <Input
-              className="flex-1"
+              className="min-w-[10rem] flex-1"
               placeholder={ph}
               value={r.pattern}
               onChange={(e) => update(i, { pattern: e.target.value })}

@@ -188,7 +188,7 @@ export default function MCPPage() {
     try {
       const t = await api.refreshMcpServer(editing.id);
       setTools(t);
-      toast.success(`발견 ${t.length}개 도구`);
+      toast.success(`도구 ${t.length}개 발견`);
       load();
     } catch (e) {
       toast.error("새로고침 실패: " + (e as Error).message);
@@ -221,7 +221,7 @@ export default function MCPPage() {
     const on = (visibility[serverId] ?? []).includes(agentId);
     try {
       await api.toggleVisibility(agentId, "mcp", serverId, !on);
-      toast.success(`${agentName} 공개${on ? " 취소" : ""}`);
+      toast.success(on ? `${agentName} 공개를 해제했습니다` : `${agentName}에게 공개했습니다`);
       load();
     } catch (e) {
       toast.error("작업 실패: " + (e as Error).message);
@@ -332,7 +332,7 @@ export default function MCPPage() {
     return (
       <div className="flex flex-col gap-3 py-4">
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground text-sm">{tools.length} 개 도구</span>
+          <span className="text-muted-foreground text-sm">{tools.length}개 도구</span>
           <Button size="sm" variant="outline" disabled={refreshing} onClick={refreshTools}>
             <RefreshCwIcon className={refreshing ? "animate-spin" : ""} /> 새로고침
           </Button>
@@ -363,7 +363,7 @@ export default function MCPPage() {
     <div className="flex flex-1 flex-col gap-4 md:gap-6">
       <div>
         <h1 className="text-xl font-semibold tracking-tight">MCP</h1>
-        <p className="text-muted-foreground text-sm">외부 MCP 도구 서버 · 에이전트별 권한으로 공개</p>
+        <p className="text-muted-foreground text-sm">외부 MCP 도구 서버 · 에이전트별 사용 권한으로 공개</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -411,7 +411,8 @@ export default function MCPPage() {
                 {s.tools && s.tools.length > 0 ? `${s.tools.length}개 도구` : "아직 발견된 도구가 없습니다"}
               </p>
               <div className="grid gap-2" onClick={(e) => e.stopPropagation()}>
-                <span className="text-muted-foreground text-xs">가시성(에이전트별 권한)</span>
+                <span className="text-muted-foreground text-xs">에이전트별 사용 권한</span>
+                <p className="text-muted-foreground text-xs">각 에이전트가 이 MCP 서버의 도구를 사용할 수 있는지 설정합니다.</p>
                 <div className="flex flex-wrap gap-x-4 gap-y-2">
                   {agents.map((a) => (
                     <label key={a.key} className="flex items-center gap-2 text-sm">

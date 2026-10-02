@@ -159,7 +159,7 @@ export default function CommandsPage() {
           <SelectContent>
             {PAGE_SIZES.map((n) => (
               <SelectItem key={n} value={String(n)}>
-                {n} / 페이지
+                페이지당 {n}개
               </SelectItem>
             ))}
           </SelectContent>
@@ -278,7 +278,7 @@ export default function CommandsPage() {
           <DialogHeader>
             <DialogTitle>도구 호출 통계</DialogTitle>
             <DialogDescription>
-              {taskFilter || queryQ ? "현재 필터 조건의 전체 기록" : "전체 도구 실행 기록"}
+              {taskFilter || queryQ ? "현재 필터 조건에 해당하는 전체 기록" : "전체 도구 실행 기록"}
               {stats.length > 0 && (
                 <>
                   {" · "}

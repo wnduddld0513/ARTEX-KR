@@ -319,7 +319,7 @@ export default function LLMRecordsPage() {
           <SelectContent>
             {PAGE_SIZES.map((n) => (
               <SelectItem key={n} value={String(n)}>
-                {n} / 페이지
+                페이지당 {n}개
               </SelectItem>
             ))}
           </SelectContent>

@@ -206,8 +206,8 @@ type DeleteCounts = Omit<DeleteTaskResult, "deleted" | "cleanup_warning">;
 
 function deleteDetails(result: DeleteCounts): string[] {
   const details: string[] = [];
-  if (result.assets_deleted > 0) details.push(`자산 삭제 ${result.assets_deleted}개`);
-  if (result.assets_detached > 0) details.push(`공유 자산 연결 해제 ${result.assets_detached}개`);
+  if (result.assets_deleted > 0) details.push(`점검 대상 삭제 ${result.assets_deleted}개`);
+  if (result.assets_detached > 0) details.push(`공유 점검 대상 연결 해제 ${result.assets_detached}개`);
   if (result.traffic_deleted > 0) details.push(`트래픽 삭제 ${result.traffic_deleted}개`);
   if (result.files_deleted) details.push("작업 파일 삭제");
   if (result.findings_deleted > 0) details.push(`취약점 삭제 ${result.findings_deleted}개`);
@@ -839,11 +839,11 @@ export default function TasksPage() {
                 </SelectContent>
               </Select>
               <span className="text-muted-foreground text-xs tabular-nums">
-                {filtered.length}/{tasks.length} 개
+                {filtered.length}/{tasks.length}개
               </span>
               {selectedIds.size > 0 && (
                 <>
-                  <span className="text-xs tabular-nums">선택됨 {selectedIds.size} 개</span>
+                  <span className="text-xs tabular-nums">선택됨 {selectedIds.size}개</span>
                   <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
                     선택 해제
                   </Button>
@@ -954,7 +954,7 @@ export default function TasksPage() {
                     <TableHead className="text-center" title="심각 / 높음 / 중간 / 낮음">
                       취약점 <span className="text-muted-foreground font-normal">심/높/중/낮</span>
                     </TableHead>
-                    <TableHead className="text-center">실행 중 Worker</TableHead>
+                    <TableHead className="text-center">실행 중 워커</TableHead>
                     <SortableTaskHead
                       field="created"
                       label="생성 시간"
@@ -1200,14 +1200,16 @@ const TaskRow = React.memo(function TaskRow({
       <TableCell className="text-muted-foreground max-w-40">
         <Link
           href={`/function/tasks/detail?id=${encodeURIComponent(task.id)}`}
-          className="block truncate rounded-sm hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="block max-w-40 truncate rounded-sm hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           title={task.description}
         >
           {task.description}
         </Link>
       </TableCell>
-      <TableCell className="text-muted-foreground max-w-40 truncate" title={task.goal}>
-        {task.goal}
+      <TableCell className="text-muted-foreground">
+        <span className="block max-w-40 truncate" title={task.goal}>
+          {task.goal}
+        </span>
       </TableCell>
       <TableCell>
         <StatusBadge domain="task" value={task.status} dot />
@@ -1281,7 +1283,7 @@ const TaskRow = React.memo(function TaskRow({
           "—"
         )}
       </TableCell>
-      <TableCell className="sticky right-0 z-10 bg-card text-right shadow-[-1px_0_0_0_hsl(var(--border))] group-hover:bg-muted/50">
+      <TableCell className="sticky right-0 z-10 bg-card text-right shadow-[-1px_0_0_0_hsl(var(--border))] group-hover:bg-[color-mix(in_oklab,var(--muted)_50%,var(--card))] group-data-[state=selected]:bg-muted">
         <div className="flex items-center justify-end gap-0.5">
           <Button size="icon" variant="ghost" asChild aria-label="작업 상세 보기" title="작업 상세 보기">
             <Link href={`/function/tasks/detail?id=${encodeURIComponent(task.id)}`}>
@@ -1492,7 +1494,7 @@ function ArchiveConfirmDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>{count === 1 ? "작업 아카이브" : `작업 ${count}개 아카이브`}</AlertDialogTitle>
           <AlertDialogDescription className="[overflow-wrap:anywhere]">
-            아카이브하면 작업 스케줄링이 중지되고 그래프, LLM 기록, 파일, 전용 자산과 트래픽이 로컬 콜드 스토리지로 압축됩니다. 아카이브가 완료되면 '아카이브됨'에서 복원할 수 있습니다.
+            아카이브하면 작업 스케줄링이 중지되고 그래프, LLM 기록, 파일, 전용 점검 대상과 트래픽이 로컬 콜드 스토리지로 압축됩니다. 아카이브가 완료되면 '아카이브됨'에서 복원할 수 있습니다.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -1617,7 +1619,7 @@ function ArchiveDeleteDialog({
       <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>영구 삭제 {archives.length} 개 작업 아카이브를 삭제할까요?</AlertDialogTitle>
+          <AlertDialogTitle>작업 아카이브 {archives.length}개를 영구 삭제할까요?</AlertDialogTitle>
           <AlertDialogDescription className="[overflow-wrap:anywhere]">
             약 {formatArchiveBytes(bytes)}의 아카이브 패키지와 {rows.toLocaleString("ko-KR")}개의 관련 데이터 스냅샷이 영구 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
           </AlertDialogDescription>
@@ -1685,7 +1687,7 @@ function TaskArchivesPanel({ onChanged }: { onChanged: () => void }) {
         if (restored) onChanged();
       }
     } catch (error) {
-      toast.error(`아카이브 목록 로드 실패: ${(error as Error).message}`);
+      toast.error(`아카이브 목록을 불러오지 못했습니다: ${(error as Error).message}`);
     } finally {
       setLoading(false);
     }
@@ -1829,10 +1831,10 @@ function TaskArchivesPanel({ onChanged }: { onChanged: () => void }) {
               </SelectGroup>
             </SelectContent>
           </Select>
-          <span className="text-muted-foreground text-xs tabular-nums">{total} 개 아카이브</span>
+          <span className="text-muted-foreground text-xs tabular-nums">아카이브 {total}개</span>
           {selectedArchives.length > 0 && (
             <>
-              <span className="text-xs tabular-nums">선택됨 {selectedArchives.length} 개</span>
+              <span className="text-xs tabular-nums">선택됨 {selectedArchives.length}개</span>
               {restorable.length > 0 && (
                 <Button size="sm" variant="outline" onClick={() => void restoreMany(restorable)}>
                   <Undo2Icon data-icon="inline-start" />
@@ -2076,7 +2078,7 @@ function DeleteOptionFields({
           />
           <FieldContent>
             <FieldLabel htmlFor={`delete-all-${idPrefix}`}>모두 삭제</FieldLabel>
-            <FieldDescription>아래의 모든 관련 데이터(자산, 트래픽, 파일, 취약점, LLM 요청/응답 기록)를 선택합니다.</FieldDescription>
+            <FieldDescription>아래의 모든 관련 데이터(점검 대상, 트래픽, 파일, 취약점, LLM 요청/응답 기록)를 선택합니다.</FieldDescription>
           </FieldContent>
         </Field>
         <Field orientation="horizontal">
@@ -2086,8 +2088,8 @@ function DeleteOptionFields({
             onCheckedChange={(checked) => updateOption("delete_assets", checked === true)}
           />
           <FieldContent>
-            <FieldLabel htmlFor={`delete-assets-${idPrefix}`}>관련 자산</FieldLabel>
-            <FieldDescription>해당 작업에만 속한 자산을 삭제하고, 공유 자산은 현재 작업 연결만 해제합니다.</FieldDescription>
+            <FieldLabel htmlFor={`delete-assets-${idPrefix}`}>관련 점검 대상</FieldLabel>
+            <FieldDescription>해당 작업에만 속한 점검 대상을 삭제하고, 공유 점검 대상은 현재 작업 연결만 해제합니다.</FieldDescription>
           </FieldContent>
         </Field>
         <Field orientation="horizontal">
@@ -2098,7 +2100,7 @@ function DeleteOptionFields({
           />
           <FieldContent>
             <FieldLabel htmlFor={`delete-traffic-${idPrefix}`}>관련 트래픽</FieldLabel>
-            <FieldDescription>관련 자산의 정확한 호스트 이름 기준으로 삭제하며, 다른 작업에서 계속 참조하는 공유 호스트 트래픽은 유지됩니다.</FieldDescription>
+            <FieldDescription>관련 점검 대상의 호스트 이름과 정확히 일치하는 트래픽만 삭제하며, 다른 작업에서 계속 참조하는 공유 호스트 트래픽은 유지됩니다.</FieldDescription>
           </FieldContent>
         </Field>
         <Field orientation="horizontal">
@@ -2109,7 +2111,7 @@ function DeleteOptionFields({
           />
           <FieldContent>
             <FieldLabel htmlFor={`delete-files-${idPrefix}`}>작업 파일</FieldLabel>
-            <FieldDescription>해당 작업 작업 디렉터리의 업로드 파일, 명령 출력 및 기타 산출물을 삭제합니다.</FieldDescription>
+            <FieldDescription>해당 작업의 작업 디렉터리에 있는 업로드 파일, 명령 출력 및 기타 산출물을 삭제합니다.</FieldDescription>
           </FieldContent>
         </Field>
         <Field orientation="horizontal">
@@ -2246,7 +2248,7 @@ function MoveTasksCategoryDialog({
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>선택한 {count} 개 작업의 분류 변경</DialogTitle>
+          <DialogTitle>선택한 작업 {count}개의 분류 변경</DialogTitle>
           <DialogDescription>대상 분류가 선택한 작업에 일괄 적용됩니다. '미분류'를 선택하면 현재 분류에서 제외됩니다.</DialogDescription>
         </DialogHeader>
         <Field>
@@ -2330,7 +2332,7 @@ function BulkDeleteTasksDialog({
       </AlertDialogTrigger>
       <AlertDialogContent className="max-h-[85vh] overflow-y-auto">
         <AlertDialogHeader>
-          <AlertDialogTitle>선택한 {ids.length} 개 작업을 삭제할까요?</AlertDialogTitle>
+          <AlertDialogTitle>선택한 작업 {ids.length}개를 삭제할까요?</AlertDialogTitle>
           <AlertDialogDescription>
             이 작업들의 실행 기록과 탐색 경로가 영구 삭제됩니다. 아래 정리 옵션이 선택한 작업에 일괄 적용됩니다.
           </AlertDialogDescription>
@@ -2341,7 +2343,7 @@ function BulkDeleteTasksDialog({
               #{id}
             </code>
           ))}
-          {ids.length > 30 && <span className="self-center">…외 {ids.length} 개</span>}
+          {ids.length > 30 && <span className="self-center">…외 {ids.length}개</span>}
         </div>
         <DeleteOptionFields idPrefix="bulk" options={options} onOptionsChange={setOptions} disabled={deleting} />
         <AlertDialogFooter>
@@ -2568,7 +2570,7 @@ const COMPANY_SCOPE_LABELS: Record<string, string> = {
 
 function companyScopeSummary(company: Company): string {
   const rows = company.scope ?? [];
-  if (rows.length === 0) return "자산 범위 미설정";
+  if (rows.length === 0) return "점검 대상 미설정";
   const preview = rows.slice(0, 3).map((row) => {
     const value = row.raw || row.value || row.domain || row.net || "";
     return `${COMPANY_SCOPE_LABELS[row.kind] ?? row.kind}：${value}`;
@@ -2611,7 +2613,7 @@ function CompanyPicker({
             <ComboboxChip key={companyID}>{companiesByID.get(companyID)?.name ?? `기업 #${companyID}`}</ComboboxChip>
           ))}
         </ComboboxValue>
-        <ComboboxChipsInput id="task-companies" placeholder="기업명 또는 자산 범위 검색" />
+        <ComboboxChipsInput id="task-companies" placeholder="기업명 또는 점검 대상 검색" />
       </ComboboxChips>
       <ComboboxContent portalContainer={portalContainer}>
         <ComboboxEmpty>일치하는 기업 없음</ComboboxEmpty>
@@ -2624,7 +2626,7 @@ function CompanyPicker({
                   <div className="flex min-w-0 items-center gap-2">
                     <span className="min-w-0 flex-1 truncate font-medium">{company?.name ?? `기업 #${companyID}`}</span>
                     <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
-                      {company?.asset_count ?? 0} 개 자산
+                      {company?.asset_count ?? 0}개 점검 대상
                     </span>
                   </div>
                   {company && (
@@ -3239,7 +3241,7 @@ function CreateTaskSheet({
                 onCategoryCreated={onCategoriesChanged}
                 portalContainer={sheetContentRef}
               />
-              <FieldDescription>선택 사항이며 하나의 분류만 지정할 수 있습니다. 작업 목록 필터링과 아카이브에 사용되며 Agent 실행에는 영향을 주지 않습니다.</FieldDescription>
+              <FieldDescription>선택 사항이며 하나의 분류만 지정할 수 있습니다. 작업 목록 필터링과 아카이브에 사용되며 에이전트 실행에는 영향을 주지 않습니다.</FieldDescription>
             </Field>
             <div className="grid gap-2">
               <Label htmlFor="description">설명</Label>
@@ -3295,12 +3297,11 @@ function CreateTaskSheet({
                 portalContainer={sheetContentRef}
               />
               <FieldDescription>
-                최대 {MAX_SOURCE_TASKS}{" "}
-                개 작업. 선택한 작업의 영구 블랙보드, 자산 범위, 관련 트래픽을 실시간 읽기 전용으로 상속하며, 새 작업은 독립된 블랙보드에 기록합니다.
+                최대 {MAX_SOURCE_TASKS}개 작업. 선택한 작업에 저장된 탐색 기록과 테스트 대상, 관련 트래픽을 실시간으로 읽기 전용 조회하며, 새 작업의 결과는 별도로 저장됩니다.
               </FieldDescription>
             </Field>
             <Field>
-              <FieldLabel htmlFor="task-companies">기업 자산 범위 연결</FieldLabel>
+              <FieldLabel htmlFor="task-companies">기업 점검 대상 연결</FieldLabel>
               <CompanyPicker
                 companies={companies}
                 value={companyIDs}
@@ -3308,18 +3309,18 @@ function CreateTaskSheet({
                 portalContainer={sheetContentRef}
               />
               <FieldDescription>
-                작업을 만들 때 선택한 기업의 기존 자산을 '테스트 자산'에 추가하고, 도메인, IP, CIDR, ICP, 기업 키워드를 Agent 범위 컨텍스트로 제공합니다. 의도를 자동 생성하거나 실행 목표를 강제로 변경하지는 않습니다.
+                작업을 만들 때 선택한 기업의 기존 점검 대상을 작업의 점검 대상 목록에 추가하고, 도메인, IP, CIDR, ICP, 기업 키워드를 에이전트가 참고할 테스트 범위 정보로 제공합니다. 탐색 계획을 자동으로 생성하거나 실행 목표를 강제로 바꾸지는 않습니다.
               </FieldDescription>
             </Field>
             <Field>
-              <FieldLabel htmlFor="task-intercept-rules">작업 수준 자산 차단 / 허용 규칙(선택)</FieldLabel>
+              <FieldLabel htmlFor="task-intercept-rules">작업 수준 점검 대상 차단 / 허용 규칙(선택)</FieldLabel>
               <AssetInterceptRulesEditor value={interceptRules} onChange={setInterceptRules} />
               <FieldDescription>
-                이 작업에만 적용되며 전역 규칙으로 저장되지 않습니다. 판정 순서: 먼저 '차단' 규칙(전역 포함)을 검사하여 해당하면 테스트가 금지됩니다. 해당하지 않고 이 작업에 '허용' 규칙이 설정되어 있으면 허용 규칙 중 하나에 해당해야만 테스트가 허용되며, 그렇지 않으면 테스트할 수 없습니다. 허용 규칙이 없으면 화이트리스트를 사용하지 않습니다.
+                이 작업에만 적용되며 전역 규칙으로 저장되지 않습니다. 판정 순서: 먼저 '차단' 규칙(전역 포함)을 검사하여 해당하면 테스트가 금지됩니다. 해당하지 않고 이 작업에 '허용' 규칙이 설정되어 있으면 허용 규칙 중 하나에 해당해야만 테스트가 허용되며, 그렇지 않으면 테스트할 수 없습니다. 허용 규칙이 없으면 허용 목록을 사용하지 않습니다.
               </FieldDescription>
             </Field>
             <Field>
-              <FieldLabel htmlFor="llm-profiles">LLM 구성 체인</FieldLabel>
+              <FieldLabel htmlFor="llm-profiles">LLM 구성 목록</FieldLabel>
               <TaskLLMProfileChain
                 profiles={profiles}
                 value={llmProfileIDs}
@@ -3327,7 +3328,7 @@ function CreateTaskSheet({
                 inputId="llm-profiles"
                 portalContainer={sheetContentRef}
               />
-              <FieldDescription>목록 순서대로 페일오버합니다. 첫 항목이 현재 구성이며, 할당량이 명확히 부족할 때만 다음 항목으로 전환합니다.</FieldDescription>
+              <FieldDescription>목록 순서대로 대체 구성으로 전환합니다. 첫 항목이 현재 구성이며, 할당량이 분명히 부족할 때만 다음 항목으로 넘어갑니다.</FieldDescription>
             </Field>
 
             {/* 高级参数默认折叠:超时/心跳/首个意图,展开才占空间,常用路径保持清爽。 */}
@@ -3335,7 +3336,7 @@ function CreateTaskSheet({
               <CollapsibleTrigger className="group flex w-full items-center gap-2 border-t pt-4 text-sm font-medium">
                 <ChevronRightIcon className="text-muted-foreground size-4 transition-transform group-data-[state=open]:rotate-90" />
                 고급 설정
-                <span className="text-muted-foreground ml-auto text-xs font-normal">타임아웃 · 하트비트 · 첫 의도</span>
+                <span className="text-muted-foreground ml-auto text-xs font-normal">타임아웃 · 하트비트 · 첫 탐색 계획</span>
               </CollapsibleTrigger>
               <CollapsibleContent className="grid gap-5 pt-5">
                 <div className="grid gap-2">
@@ -3350,11 +3351,11 @@ function CreateTaskSheet({
                     onChange={(e) => setTimeoutMin(e.target.value)}
                   />
                   <p className="text-muted-foreground text-xs">
-                    시간이 되면 정상 마무리(각 agent 기록 + planner 최종 판정)를 트리거하고 작업은 timeout 종료 상태로 들어갑니다.
+                    시간이 되면 정상 마무리(각 에이전트 기록 + 계획 에이전트 최종 판정)를 트리거하고 작업은 timeout 종료 상태로 들어갑니다.
                   </p>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="heartbeat-min">planner 하트비트(분)</Label>
+                  <Label htmlFor="heartbeat-min">계획 에이전트 하트비트(분)</Label>
                   <Input
                     id="heartbeat-min"
                     type="number"
@@ -3375,10 +3376,10 @@ function CreateTaskSheet({
                       checked={seedFirstIntent}
                       onCheckedChange={(v) => setSeedFirstIntent(!!v)}
                     />
-                    첫 의도를 바로 전달(설명+목표)
+                    첫 탐색 계획을 바로 전달(설명+목표)
                   </label>
                   <p className="text-muted-foreground text-xs">
-                    켜면 작업 생성 시 '설명+목표'를 하나의 의도로 바로 전달합니다. worker는 첫 계획을 기다리지 않고 즉시 실행을 시작하고, 완료 후 planner가 이어받아 판정/보충합니다. CTF처럼 한 번의 작업으로 끝나는 경우에 켜는 것을 권장하며, 끄면 표준 방식(계획 후 실행)으로 동작합니다.
+                    켜면 작업 생성 시 '설명+목표'를 하나의 탐색 계획으로 바로 전달합니다. 실행 에이전트는 첫 계획을 기다리지 않고 즉시 실행을 시작하고, 완료 후 계획 에이전트가 이어받아 판정/보충합니다. CTF처럼 한 번의 작업으로 끝나는 경우에 켜는 것을 권장하며, 끄면 표준 방식(계획 후 실행)으로 동작합니다.
                   </p>
                 </div>
                 <div className="grid gap-2">
@@ -3388,10 +3389,10 @@ function CreateTaskSheet({
                       checked={coverageEnabled}
                       onCheckedChange={(v) => setCoverageEnabled(!!v)}
                     />
-                    자산 커버리지 기능
+                    점검 대상 커버리지 기능
                   </label>
                   <p className="text-muted-foreground text-xs">
-                    기본값 켜짐: 테스트 커버리지를 계산·표시하고, 상황도에 테스트 진행률을 표시하며, 테스트 범위를 자동 누적합니다. 끄면 커버리지를 계산/표시하지 않고 상황도는 자산만 표시하며 진행률을 보여주지 않습니다. agent도 범위 관련 도구를 받지 않습니다. 꺼도 '기업 자산 범위 연결'에는 영향을 주지 않습니다.
+                    기본값 켜짐: 테스트 커버리지를 계산·표시하고, 커버리지 맵에 테스트 진행률을 표시하며, 테스트 범위를 자동 누적합니다. 끄면 커버리지를 계산/표시하지 않고 커버리지 맵은 점검 대상만 표시하며 진행률을 보여주지 않습니다. 에이전트도 범위 관련 도구를 받지 않습니다. 꺼도 '기업 점검 대상 연결'에는 영향을 주지 않습니다.
                   </p>
                 </div>
               </CollapsibleContent>

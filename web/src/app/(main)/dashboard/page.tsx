@@ -49,6 +49,21 @@ const dailyTrendConfig = {
   cacheRead: { label: "캐시 읽기", color: "hsl(160 60% 45%)" },
 } satisfies ChartConfig;
 
+// 기록 종류 표시용 라벨(원본 kind 값은 그대로 두고 화면에만 한국어로 표시)
+const ACTIVITY_KIND_LABELS: Record<string, string> = {
+  tool_use: "도구 요청",
+  tool_result: "실행 결과",
+  text: "응답",
+  thinking: "추론",
+  result: "요약",
+  user: "사용자 메시지",
+  intent: "탐색 계획",
+  round: "라운드",
+  llm_switch: "LLM 전환",
+  llm_failover: "LLM 대체",
+  intercept_request: "승인 요청",
+};
+
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 function fmtRel(ts?: string | number): string {
@@ -472,9 +487,8 @@ export default function DashboardPage() {
 
   // activity kind label
   function kindLabel(a: Activity): string {
-    if (a.kind === "tool_use") return a.tool ?? "tool_use";
-    if (a.kind === "tool_result") return "tool_result";
-    return a.kind;
+    if (a.kind === "tool_use") return a.tool ?? ACTIVITY_KIND_LABELS.tool_use;
+    return ACTIVITY_KIND_LABELS[a.kind] ?? a.kind;
   }
 
   function workerColor(w: string): string {
@@ -497,7 +511,7 @@ export default function DashboardPage() {
       <div>
         <div>
           <h1 className="text-lg font-semibold tracking-tight">개요</h1>
-          <p className="text-xs text-muted-foreground">시스템 전역 상태 · 실시간 갱신</p>
+          <p className="text-xs text-muted-foreground">전체 시스템 현황 · 실시간 업데이트</p>
         </div>
       </div>
 
@@ -526,7 +540,7 @@ export default function DashboardPage() {
         <Card className="gap-1">
           <CardHeader className="pb-0">
             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-              <BugIcon className="size-3" /> 확인된 발견 사항
+              <BugIcon className="size-3" /> 확인된 취약점
             </div>
             <div className="text-2xl font-semibold tabular-nums">{findings.length}</div>
           </CardHeader>
@@ -542,7 +556,7 @@ export default function DashboardPage() {
         <Card className="gap-1">
           <CardHeader className="pb-0">
             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-              <NetworkIcon className="size-3" /> 자산 노드
+              <NetworkIcon className="size-3" /> 점검 대상 노드
             </div>
             <div className="text-2xl font-semibold tabular-nums">{totalAssets}</div>
           </CardHeader>
@@ -553,7 +567,7 @@ export default function DashboardPage() {
         <Card className="gap-1">
           <CardHeader className="pb-0">
             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-              <ActivityIcon className="size-3" /> 트래픽 교환
+              <ActivityIcon className="size-3" /> 트래픽 기록
             </div>
             <div className="text-2xl font-semibold tabular-nums">{traffic.length}</div>
           </CardHeader>
@@ -580,7 +594,7 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent className="text-[10px] text-muted-foreground">
-            입력 {fmtTokens(displayedTokens.input)}(캐시 {fmtTokens(displayedTokens.cacheRead)} 포함) · 출력{" "}
+            입력 {fmtTokens(displayedTokens.input)} (캐시 {fmtTokens(displayedTokens.cacheRead)} 포함) · 출력{" "}
             {fmtTokens(displayedTokens.output)}
           </CardContent>
         </Card>
@@ -592,13 +606,13 @@ export default function DashboardPage() {
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 text-xs font-semibold">
             <ZapIcon className="size-3.5 text-muted-foreground" />
-            LLM 토큰 소비
+            LLM 토큰 사용량
             {/* 数据源开关：旧版=activity 统计（含历史任务），新版=llm_usage 计量账本（更准，仅覆盖启用后） */}
             <div className="ml-1 flex gap-0.5 rounded-md border bg-muted/30 p-0.5">
               {(
                 [
-                  { v: "old", label: "구버전" },
-                  { v: "new", label: "신버전" },
+                  { v: "old", label: "이전 기록" },
+                  { v: "new", label: "새 기록" },
                 ] as const
               ).map(({ v, label }) => (
                 <button
@@ -607,8 +621,8 @@ export default function DashboardPage() {
                   onClick={() => setTokenVersion(v)}
                   title={
                     v === "new"
-                      ? "신버전: llm_usage 계량 원장 기반, 호출별로 정확하고 중단된 소비도 포함, 활성화 이후 데이터만 반영"
-                      : "구버전: activity 통계 기반(과거 작업 포함), 중단된 소비는 미포함, 모델별 정확한 구분 불가"
+                      ? "새 기록: 호출별 사용량 기록 기반. 더 정확하고 중단된 사용량도 포함하며, 기능을 켠 이후 데이터만 반영합니다."
+                      : "이전 기록: 작업 통계 기반(과거 작업 포함). 중단된 사용량은 빠져 있고, 모델별 구분은 정확하지 않습니다."
                   }
                   className={cn(
                     "rounded px-2 py-0.5 text-[9px] font-medium transition-colors",
@@ -872,7 +886,7 @@ export default function DashboardPage() {
               if (count === 0) return null;
               return (
                 <span key={kind} className="rounded border bg-muted/20 px-1.5 py-0.5 text-[9px] text-muted-foreground">
-                  {kind} <strong className="text-foreground/70">{count}</strong>
+                  {ACTIVITY_KIND_LABELS[kind] ?? kind} <strong className="text-foreground/70">{count}</strong>
                 </span>
               );
             })}
@@ -894,11 +908,11 @@ export default function DashboardPage() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="text-[11px] font-medium">{kindLabel(a)}</div>
-                    <div className="mt-0.5 truncate text-[10px] text-muted-foreground">{a.summary}</div>
+                    <div className="mt-0.5 truncate text-[10px] text-muted-foreground" title={a.summary}>{a.summary}</div>
                   </div>
                   <div className="shrink-0 text-right">
                     <Badge variant="outline" className="px-1.5 py-0 text-[9px] text-muted-foreground">
-                      {a.kind}
+                      {ACTIVITY_KIND_LABELS[a.kind] ?? a.kind}
                     </Badge>
                     <div className="mt-0.5 text-[9px] tabular-nums text-muted-foreground">{fmtRel(a.ts)}</div>
                   </div>
@@ -913,7 +927,7 @@ export default function DashboardPage() {
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs font-semibold">
               <BugIcon className="size-3.5 text-muted-foreground" />
-              발견 사항
+              취약점
             </div>
             <Link
               href="/function/findings"
@@ -925,7 +939,7 @@ export default function DashboardPage() {
 
           <div className="divide-y">
             {recentFindings.length === 0 ? (
-              <div className="py-4 text-center text-xs text-muted-foreground">발견 사항 없음</div>
+              <div className="py-4 text-center text-xs text-muted-foreground">취약점 없음</div>
             ) : (
               recentFindings.map((f) => (
                 <div key={f.id} className="flex items-start gap-2 py-2">
@@ -938,7 +952,7 @@ export default function DashboardPage() {
                     <div className="flex flex-wrap items-center gap-1.5">
                       <span className="text-[11px] font-semibold">{f.vulnclass}</span>
                       {f.task_description && (
-                        <span className="truncate text-[10px] text-muted-foreground">{f.task_description}</span>
+                        <span className="truncate text-[10px] text-muted-foreground" title={f.task_description}>{f.task_description}</span>
                       )}
                     </div>
                     <div className="mt-0.5 line-clamp-2 text-[10px] leading-snug text-muted-foreground">
@@ -1046,11 +1060,11 @@ export default function DashboardPage() {
         {/* 资产分布 */}
         <Card className="p-4">
           <SectionTitle icon={NetworkIcon} sub="유형별">
-            자산 분포
+            점검 대상 분포
           </SectionTitle>
 
           {assetByType.length === 0 ? (
-            <div className="py-6 text-center text-xs text-muted-foreground">자산 데이터 없음</div>
+            <div className="py-6 text-center text-xs text-muted-foreground">점검 대상 데이터 없음</div>
           ) : (
             <div className="flex flex-col gap-2">
               {assetByType.map(([type, count]) => (
@@ -1201,7 +1215,7 @@ export default function DashboardPage() {
           {pendingCount === 0 && (
             <div className="mt-3 rounded-lg border bg-muted/10 px-3 py-3 text-center text-[10px] text-muted-foreground">
               <ShieldCheckIcon className="mx-auto mb-1 size-4 text-emerald-500/50" />
-              승인 대기 중인 차단 없음
+              대기 중인 승인 없음
             </div>
           )}
         </Card>

@@ -35,7 +35,7 @@ function Command({
 
 function CommandDialog({
   title = "명령 팔레트",
-  description = "실행할 명령을 검색...",
+  description = "실행할 명령을 검색…",
   children,
   className,
   showCloseButton = false,

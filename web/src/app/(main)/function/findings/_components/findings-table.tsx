@@ -110,7 +110,7 @@ interface FindingsTableProps {
   selectAllLabel?: string;
 }
 
-// FindingsTable은 발견 목록의 표 본문입니다. 평면 뷰와 작업별 그룹 뷰가 같은 행 렌더링을 공유합니다
+// FindingsTable은 취약점 목록의 표 본문입니다. 평면 뷰와 작업별 그룹 뷰가 같은 행 렌더링을 공유합니다
 // (선택 / 인라인 펼침 / 인라인 이름·상태 변경 / 재검증 / 심층 분석 / 삭제). 차이는 바깥 컨테이너와 페이지 처리뿐입니다.
 export function FindingsTable({
   items,
@@ -155,7 +155,7 @@ export function FindingsTable({
           <TableHead className="w-8" />
           <TableHead className="w-20">심각도</TableHead>
           <TableHead>취약점 이름</TableHead>
-          <TableHead className="w-44">자산</TableHead>
+          <TableHead className="w-44">점검 대상</TableHead>
           <TableHead className="w-28">상태</TableHead>
           <TableHead className="w-32">소속 작업</TableHead>
           <TableHead className="w-24">시간</TableHead>
@@ -312,7 +312,7 @@ export function FindingsTable({
                               <span className="break-all">
                                 {f.name || f.vulnclass || f.summary || `#${f.finding_id}`}
                               </span>
-                              은(는) 영구적으로 삭제되며 발견 목록, 작업 발견 탭, 탐색 그래프에서도 제거됩니다. 이 작업은 되돌릴 수 없습니다.
+                              은(는) 영구적으로 삭제되며 취약점 목록과 작업의 취약점 탭, 탐색 그래프에서도 제거됩니다. 이 작업은 되돌릴 수 없습니다.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
@@ -378,14 +378,14 @@ export function FindingsTable({
                         증거
                         {f.vulnclass && (
                           <span>
-                            · 유형:
+                            · 유형:{" "}
                             <code className="rounded bg-muted px-1.5 py-0.5 font-mono">{f.vulnclass}</code>
                           </span>
                         )}
                         {f.param_id && <code className="rounded bg-muted px-1.5 py-0.5 font-mono">{f.param_id}</code>}
                         {f.assets && f.assets.length > 0 && (
                           <span className="flex flex-wrap items-center gap-1">
-                            · 자산:
+                            · 점검 대상:
                             {f.assets.map((a) => (
                               <code key={a.id} className="rounded bg-muted px-1.5 py-0.5 font-mono" title={a.type}>
                                 {a.label}
@@ -444,7 +444,7 @@ export function FindingsTable({
         {items.length === 0 && (
           <TableRow>
             <TableCell colSpan={COLUMN_COUNT} className="py-12 text-center text-sm text-muted-foreground">
-              일치하는 발견이 없습니다.
+              일치하는 취약점이 없습니다.
             </TableCell>
           </TableRow>
         )}

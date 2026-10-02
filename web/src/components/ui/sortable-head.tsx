@@ -33,7 +33,7 @@ export function SortableHead<Field extends string>({
   if (active) ariaSort = direction === "asc" ? "ascending" : "descending";
 
   let actionLabel = `${label} 내림차순 정렬`;
-  if (active) actionLabel = `${label} 현재 ${direction === "asc" ? "오름차순" : "내림차순"}, 클릭하여 정렬 방향 전환`;
+  if (active) actionLabel = `${label} 현재 ${direction === "asc" ? "오름차순" : "내림차순"}, 클릭하면 정렬 방향이 바뀝니다`;
 
   let icon = <ArrowUpDownIcon className="size-3.5 opacity-40 transition-opacity group-hover/sort:opacity-100" />;
   if (active) icon = direction === "asc" ? <ArrowUpIcon className="size-3.5" /> : <ArrowDownIcon className="size-3.5" />;

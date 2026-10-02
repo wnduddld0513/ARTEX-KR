@@ -31,8 +31,8 @@ type ComposerLayout = "inline" | "stacked";
 
 const preparationLabels = {
   preparing: "컨텍스트 준비 중…",
-  summarizing_history: "이전 사이드 문답을 정리하는 중…",
-  compressing_snapshot: "사이드 컨텍스트 사본을 압축하는 중…",
+  summarizing_history: "이전 추가 질문을 정리하는 중…",
+  compressing_snapshot: "추가 질문용 컨텍스트 사본을 압축하는 중…",
   retrying: "모델 컨텍스트 한도를 초과해 줄인 뒤 다시 시도하는 중…",
   answering: "답변 생성 중…",
 };
@@ -40,9 +40,9 @@ const preparationLabels = {
 export function SideQuestionButton({ side }: { side: SideQuestions }) {
   if (!side.enabled) return null;
   return (
-    <Button variant="outline" size="sm" onClick={() => side.setOpen(true)} title="/btw 사이드 질문">
+    <Button variant="outline" size="sm" onClick={() => side.setOpen(true)} title="/btw 추가 질문">
       <MessageCircleQuestionIcon data-icon="inline-start" />
-      사이드 질문
+      추가 질문
     </Button>
   );
 }
@@ -67,11 +67,11 @@ function SidePanel({
   }, [tail?.answer, tail?.id]);
   const status = { running: "답변 중", completed: "완료됨", failed: "실패", cancelled: "중지됨", interrupted: "중단됨" };
   return (
-    <section className="flex h-full min-h-0 flex-col bg-background" aria-label="사이드 질문 패널">
+    <section className="flex h-full min-h-0 flex-col bg-background" aria-label="추가 질문 패널">
       <div className="flex items-center gap-2 border-b p-3">
         <div className="min-w-0 flex-1">
           <p className="font-medium">
-            사이드 질문 <span className="text-muted-foreground">/btw</span>
+            추가 질문 <span className="text-muted-foreground">/btw</span>
           </p>
           <p className="truncate text-muted-foreground text-xs">{label}</p>
         </div>
@@ -80,11 +80,11 @@ function SidePanel({
           size="icon-sm"
           onClick={() => setConfirm(true)}
           disabled={!side.items.length || side.busy}
-          aria-label="사이드 기록 지우기"
+          aria-label="추가 질문 기록 지우기"
         >
           <Trash2Icon />
         </Button>
-        <Button variant="ghost" size="icon-sm" onClick={() => side.setOpen(false)} aria-label="사이드 패널 닫기">
+        <Button variant="ghost" size="icon-sm" onClick={() => side.setOpen(false)} aria-label="추가 질문 패널 닫기">
           <XIcon />
         </Button>
       </div>
@@ -95,7 +95,7 @@ function SidePanel({
             <p>컨텍스트 업데이트: {new Date(side.snapshot.captured_at).toLocaleString("ko-KR")}</p>
           </>
         ) : (
-          "메인 Agent가 처음 실행된 후 질문할 수 있습니다"
+          "메인 에이전트가 처음 실행된 후 질문할 수 있습니다"
         )}
       </div>
       <div
@@ -108,7 +108,7 @@ function SidePanel({
       >
         {side.nextCursor > 0 && (
           <Button variant="ghost" size="sm" onClick={() => void side.load(side.nextCursor)}>
-            이전 사이드 문답 불러오기
+            이전 추가 질문 불러오기
           </Button>
         )}
         {side.loading && <Skeleton className="h-16 w-full" />}
@@ -116,7 +116,7 @@ function SidePanel({
           <Empty>
             <EmptyHeader>
               <EmptyTitle>언제든 질문하기</EmptyTitle>
-              <EmptyDescription>현재 Agent의 컨텍스트를 바탕으로 답변하며, 메인 작업은 계속 실행됩니다.</EmptyDescription>
+              <EmptyDescription>현재 에이전트의 컨텍스트를 바탕으로 답변하며, 메인 작업은 계속 실행됩니다.</EmptyDescription>
             </EmptyHeader>
           </Empty>
         )}
@@ -163,7 +163,7 @@ function SidePanel({
           <InputGroupTextarea
             rows={1}
             className={cn("overflow-y-auto", inlineComposer ? "max-h-40 min-h-0" : "max-h-36 min-h-9")}
-            aria-label="사이드 질문"
+            aria-label="추가 질문"
             placeholder="현재 컨텍스트에 질문…"
             value={side.draft}
             maxLength={4000}
@@ -184,7 +184,7 @@ function SidePanel({
                 variant="destructive"
                 size="icon-xs"
                 onClick={() => void side.stop()}
-                aria-label="사이드 답변 중지"
+                aria-label="추가 질문 답변 중지"
               >
                 <SquareIcon />
               </InputGroupButton>
@@ -195,7 +195,7 @@ function SidePanel({
                 size="icon-xs"
                 onClick={() => void side.ask(side.draft)}
                 disabled={side.busy || !side.draft.trim() || !side.snapshot?.available}
-                aria-label="사이드 질문 전송"
+                aria-label="추가 질문 전송"
               >
                 <ArrowUpIcon />
               </InputGroupButton>
@@ -209,9 +209,9 @@ function SidePanel({
       <AlertDialog open={confirm} onOpenChange={setConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>사이드 기록을 지울까요?</AlertDialogTitle>
+            <AlertDialogTitle>추가 질문 기록을 지울까요?</AlertDialogTitle>
             <AlertDialogDescription>
-              현재 Agent의 사이드 문답을 삭제하고 생성 중인 사이드 답변을 중지합니다. 메인 대화와 컨텍스트 스냅샷은 유지됩니다.
+              현재 에이전트의 추가 질문 기록을 삭제하고 생성 중인 답변을 중지합니다. 메인 대화와 컨텍스트 스냅샷은 유지됩니다.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -254,7 +254,7 @@ export function SideQuestionWorkspace({
       <Drawer open={mobile && side.open && side.enabled} onOpenChange={side.setOpen}>
         <DrawerContent className="h-[85svh]">
           <DrawerHeader className="sr-only">
-            <DrawerTitle>사이드 질문</DrawerTitle>
+            <DrawerTitle>추가 질문</DrawerTitle>
             <DrawerDescription>{label}의 독립 문답</DrawerDescription>
           </DrawerHeader>
           <SidePanel side={side} label={label} composerLayout={composerLayout} />

@@ -33,7 +33,7 @@ export function TodoPopover({
       const parsed = JSON.parse(start >= 0 ? detail.slice(start) : detail);
       setTodos(Array.isArray(parsed?.todos) ? parsed.todos : []);
     } catch {
-      setErr("Todo 파싱 실패");
+      setErr("할 일 목록을 읽지 못했습니다");
       setTodos(null);
     } finally {
       setLoading(false);
@@ -53,7 +53,7 @@ export function TodoPopover({
         <button
           type="button"
           disabled={disabled}
-          title={disabled ? "이 대화에는 Todo가 없습니다" : "최근 Todo 보기"}
+          title={disabled ? "이 대화에는 할 일이 없습니다" : "최근 할 일 보기"}
           className="text-muted-foreground/70 hover:text-primary flex items-center gap-0.5 text-xs disabled:pointer-events-none disabled:opacity-40"
         >
           <ListTodo className="size-3" />할 일
@@ -61,7 +61,7 @@ export function TodoPopover({
       </PopoverTrigger>
       <PopoverContent align="end" className="max-h-80 w-80 overflow-auto p-2">
         <p className="text-muted-foreground px-1 pb-1 text-[11px] font-medium">
-          최근 Todo{loading ? " · 불러오는 중…" : ""}
+          최근 할 일{loading ? " · 불러오는 중…" : ""}
         </p>
         {err && <p className="text-destructive px-1 text-xs">{err}</p>}
         {todos && todos.length === 0 && !loading && (

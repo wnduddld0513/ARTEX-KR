@@ -32,7 +32,7 @@ export function DeliveryList({ channels }: { channels: NotificationChannel[] }) 
         setRows(r.deliveries);
         setTotal(r.total);
       })
-      .catch((e) => toast.error("전달 기록을 불러오지 못했습니다: " + (e as Error).message))
+      .catch((e) => toast.error("발송 기록을 불러오지 못했습니다: " + (e as Error).message))
       .finally(() => setLoading(false));
   }, [channelID, state, page]);
   React.useEffect(() => {
@@ -42,10 +42,10 @@ export function DeliveryList({ channels }: { channels: NotificationChannel[] }) 
   async function retry(id: number) {
     try {
       await api.notifyRetryDelivery(id);
-      toast.success("다시 대기열에 넣었습니다");
+      toast.success("재발송 대기열에 다시 넣었습니다");
       load();
     } catch (e) {
-      toast.error("재전송 실패: " + (e as Error).message);
+      toast.error("재발송 실패: " + (e as Error).message);
     }
   }
 
@@ -95,7 +95,7 @@ export function DeliveryList({ channels }: { channels: NotificationChannel[] }) 
         <Button size="sm" variant="outline" onClick={load} disabled={loading}>
           <RefreshCwIcon className={loading ? "animate-spin" : ""} /> 새로고침
         </Button>
-        <span className="text-muted-foreground ml-auto text-xs">총 {total} 건</span>
+        <span className="text-muted-foreground ml-auto text-xs">총 {total}건</span>
       </div>
 
       <Card className="py-0">
@@ -115,7 +115,7 @@ export function DeliveryList({ channels }: { channels: NotificationChannel[] }) 
             {rows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-muted-foreground py-8 text-center">
-                  {loading ? "불러오는 중…" : "전달 기록이 없습니다"}
+                  {loading ? "불러오는 중…" : "발송 기록이 없습니다"}
                 </TableCell>
               </TableRow>
             ) : (
@@ -149,7 +149,7 @@ export function DeliveryList({ channels }: { channels: NotificationChannel[] }) 
                     {/* 只有失败/跳过的才给重发入口：已送达的重发会造成重复推送。 */}
                     {(d.state === "failed" || d.state === "skipped") && (
                       <Button size="sm" variant="outline" onClick={() => retry(d.id)}>
-                        <RotateCcwIcon /> 재전송
+                        <RotateCcwIcon /> 재발송
                       </Button>
                     )}
                   </TableCell>

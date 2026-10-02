@@ -58,8 +58,7 @@ export function FindingRetestDialog({ findingId, findingName, onClose, onStarted
           <DialogTitle>취약점 재검증 #{findingId}</DialogTitle>
           <DialogDescription className="break-words">
             {findingName ? <span className="mb-2 block">{findingName}</span> : null}
-            재검증 에이전트
-            원본 증거와 테스트 제약을 읽고 독립된 대화에서 표적 검증을 수행합니다. 재검증이 성공적으로 끝나고 수정이 확인되면 취약점 상태가 자동으로 「수정됨」으로 바뀌며, 다른 결론은 기존 상태를 유지합니다.
+            재검증 에이전트가 원본 증거와 작업 규칙을 읽고 독립된 대화에서 해당 취약점을 검증합니다. 재검증이 성공적으로 끝나고 수정이 확인되면 취약점 상태가 자동으로 「수정됨」으로 바뀌며, 다른 결론은 기존 상태를 유지합니다.
           </DialogDescription>
         </DialogHeader>
         <FieldGroup>
@@ -72,9 +71,9 @@ export function FindingRetestDialog({ findingId, findingName, onClose, onStarted
               rows={4}
               disabled={submitting}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="예: 원래 테스트 계정으로 기존 API를 검증, 수정 버전은 v2."
+              placeholder="예: 기존 API는 원래 테스트 계정으로, 수정 버전은 v2로 검증합니다."
             />
-            <FieldDescription>수정 버전, 테스트 조건 또는 이번 제약을 덧붙일 수 있습니다.</FieldDescription>
+            <FieldDescription>수정 버전, 테스트 조건 또는 이번 테스트의 제한 사항을 덧붙일 수 있습니다.</FieldDescription>
           </Field>
         </FieldGroup>
         <DialogFooter>

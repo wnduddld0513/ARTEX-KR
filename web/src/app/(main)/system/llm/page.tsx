@@ -52,7 +52,7 @@ const MAX_TOKENS_FIELDS: { value: string; label: string }[] = [
 // 另外两种格式各自定死了字段名，选项对它们无意义，说明文案里直接讲清楚。
 const MAX_TOKENS_FIELD_HINTS: Record<string, string> = {
   openai:
-    "상한으로 어떤 키를 보낼지 정합니다. max_tokens가 기본이며 대부분의 호환 게이트웨이는 이 키만 인식합니다. 반대로 OpenAI 공식 추론 모델(o 시리즈 / GPT-5)은 max_completion_tokens만 인식하므로 max_tokens를 받으면 unsupported_parameter 오류를 반환합니다.",
+    "출력 상한을 어떤 키로 보낼지 정합니다. max_tokens가 기본이며 대부분의 호환 게이트웨이는 이 키만 인식합니다. 반대로 OpenAI 공식 추론 모델(o 시리즈 / GPT-5)은 max_completion_tokens만 인식하므로 max_tokens를 받으면 unsupported_parameter 오류를 반환합니다.",
   anthropic: "openai 형식에서만 선택할 수 있습니다. Anthropic의 필드 이름은 max_tokens로 고정입니다.",
   "openai-responses": "openai 형식에서만 선택할 수 있습니다. Responses API의 필드 이름은 max_output_tokens로 고정입니다.",
 };
@@ -130,9 +130,9 @@ function PoolSheet({
       await api.setSettings(patch);
       await onReload();
       if (patch.llm_pool_enabled !== undefined) {
-        toast.success(patch.llm_pool_enabled ? "LLM 폴링을 켰습니다" : "LLM 폴링을 껐습니다");
+        toast.success(patch.llm_pool_enabled ? "모델 순환 호출을 켰습니다" : "모델 순환 호출을 껐습니다");
       } else {
-        toast.success("폴백 설정이 업데이트되었습니다");
+        toast.success("대체 처리 설정을 업데이트했습니다");
       }
     } catch (e) {
       toast.error(`설정 실패: ${(e as Error).message}`);
@@ -162,24 +162,24 @@ function PoolSheet({
       <SheetContent side="right" className="flex flex-col gap-0 p-0 data-[side=right]:sm:max-w-lg">
         <SheetHeader className="px-4">
           <SheetTitle className="flex items-center gap-2">
-            <ZapIcon className="size-4" /> LLM 폴링 · 장애 조치
+            <ZapIcon className="size-4" /> 모델 순환 호출 · 장애 전환
           </SheetTitle>
           <SheetDescription>
-            켜면 <b>모델을 지정하지 않은</b> 에이전트가 현재 설정을 사용할 수 없을 때(잔액 부족 / 키 만료 / 속도 제한 / 서비스 이상) 자동으로 다음 설정으로 전환됩니다.
+            켜면 <b>모델을 지정하지 않은</b> 에이전트가 현재 설정을 사용할 수 없을 때(잔액 부족 / 키 만료 / 속도 제한 / 서비스 이상) 자동으로 다음 설정(대체 모델)으로 전환됩니다.
           </SheetDescription>
         </SheetHeader>
 
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-6">
           <div className="flex items-center justify-between gap-4 rounded-lg border p-3">
             <div className="grid gap-0.5">
-              <Label className="text-sm">폴링 사용</Label>
+              <Label className="text-sm">순환 호출 사용</Label>
               <p className="text-muted-foreground text-xs">기본은 꺼짐입니다. 끄면 항상 활성 설정만 사용하고, 실패하면 그대로 실패합니다.</p>
             </div>
             <Switch
               checked={enabled}
               disabled={busy}
               onCheckedChange={(v) => void toggle({ llm_pool_enabled: v })}
-              aria-label="LLM 폴링 스위치"
+              aria-label="모델 순환 호출 스위치"
             />
           </div>
 
@@ -187,16 +187,16 @@ function PoolSheet({
             <>
               <div className="flex items-center justify-between gap-4 rounded-lg border p-3">
                 <div className="grid gap-0.5">
-                  <Label className="text-sm">지정 모델 실패 시에도 폴백</Label>
+                  <Label className="text-sm">지정 모델 실패 시에도 대체 처리</Label>
                   <p className="text-muted-foreground text-xs">
-                    기본은 꺼짐입니다: 에이전트나 태스크가 특정 설정을 지정하면 그것만 사용하고, 실패하면 그대로 실패합니다(다른 모델로 조용히 바뀌지 않습니다). 켜면 지정한 설정이 실패할 때도 아래 폴링 체인으로 넘어갑니다.
+                    기본은 꺼짐입니다. 에이전트나 작업이 특정 설정을 지정하면 그것만 사용하고, 실패하면 그대로 실패합니다(다른 모델로 조용히 바뀌지 않습니다). 켜면 지정한 설정이 실패할 때도 아래 순환 호출 순서로 넘어갑니다.
                   </p>
                 </div>
                 <Switch
                   checked={pool?.bind_fallback ?? false}
                   disabled={busy}
                   onCheckedChange={(v) => void toggle({ llm_pool_bind_fallback: v })}
-                  aria-label="바인딩 설정 실패 폴백 스위치"
+                  aria-label="지정 설정 실패 시 대체 처리 스위치"
                 />
               </div>
 
@@ -204,7 +204,7 @@ function PoolSheet({
 
               <div className="grid gap-2">
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm">폴링 순서</Label>
+                  <Label className="text-sm">호출 순서</Label>
                   {tripped.length > 0 && (
                     <Button size="sm" variant="ghost" onClick={() => void recover()}>
                       <RotateCcwIcon /> 전체 복원
@@ -213,7 +213,7 @@ function PoolSheet({
                 </div>
                 {inChain.length < 2 && (
                   <p className="text-muted-foreground text-xs">
-                    현재  {inChain.length} 개의 설정만 사용할 수 있어 폴링이 동작하지 않습니다 — API 키가 입력되어 폴링에 참여하는 설정이 최소 2개 필요합니다.
+                    현재 {inChain.length}개의 설정만 사용할 수 있어 순환 호출이 동작하지 않습니다 — API 키가 입력되어 순환 호출에 참여하는 설정이 최소 2개 필요합니다.
                   </p>
                 )}
                 {chain.map((m) => {
@@ -238,13 +238,13 @@ function PoolSheet({
                             활성
                           </Badge>
                         )}
-                        {excluded && <Badge variant="outline">폴링 제외</Badge>}
+                        {excluded && <Badge variant="outline">순환 호출 제외</Badge>}
                         <div className="ml-auto flex items-center gap-2">
                           {m.state === "tripped" && m.cooldown_secs > 0 && (
                             <span className="text-muted-foreground text-xs">쿨다운 {cooldownText(m.cooldown_secs)}</span>
                           )}
                           {m.state === "degraded" && (
-                            <span className="text-muted-foreground text-xs">연속 실패 {m.fails} 회</span>
+                            <span className="text-muted-foreground text-xs">연속 실패 {m.fails}회</span>
                           )}
                           {m.state !== "ok" && (
                             <Button
@@ -280,7 +280,7 @@ function PoolSheet({
               </div>
 
               <div className="rounded-lg border border-dashed p-3 text-muted-foreground text-xs leading-relaxed">
-                활성 설정은 항상 1순위이고, 나머지는 우선순위가 높은 순서대로(각 설정에서 지정) 사용합니다. 설정이 실패하면 쿨다운(60s → 5min → 30min)에 들어가고, 쿨다운 동안에는 건너뛰며 복구되면 자동으로 다시 사용합니다. 컨텍스트 창에 현재 요청이 들어가지 않는 설정은 건너뜁니다. 모델을 지정한 에이전트와 태스크는 기본적으로 폴링에 참여하지 않습니다.
+                활성 설정은 항상 1순위이고, 나머지는 우선순위가 높은 순서대로(각 설정에서 지정) 사용합니다. 설정이 실패하면 쿨다운(60s → 5min → 30min)에 들어가고, 쿨다운 동안에는 건너뛰며 복구되면 자동으로 다시 사용합니다. 컨텍스트 창에 현재 요청이 들어가지 않는 설정은 건너뜁니다. 모델을 지정한 에이전트와 작업은 기본적으로 순환 호출에 참여하지 않습니다.
               </div>
             </>
           )}
@@ -369,9 +369,9 @@ function ProfileSheet({
       if (r.ok && r.models && r.models.length > 0) {
         setModels(r.models);
         setModelsOpen(true);
-        toast.success(`모델 ${r.models.length}개 불러옴`);
+        toast.success(`모델 ${r.models.length}개를 불러왔습니다`);
       } else {
-        toast.error(`모델을 불러오지 못했습니다: ${r.error ?? "모델을 가져오지 못했습니다"}`);
+        toast.error(`모델을 불러오지 못했습니다: ${r.error ?? "알 수 없는 오류"}`);
       }
     } catch (e) {
       toast.error(`모델 불러오기 오류: ${(e as Error).message}`);
@@ -583,7 +583,7 @@ function ProfileSheet({
               onChange={(e) => setSessionHeaderKey(e.target.value)}
             />
             <p className="text-muted-foreground text-xs">
-              헤더 이름을 입력하면 모든 요청에 이 HTTP 헤더가 포함되며, 값은 자동으로  <b>현재 세션의 session id</b>(chat 세션은 conv-12, worker는 exp3-worker-i87 등)로 채워집니다. session-id 헤더로 프롬프트 캐시 / 스티키 라우팅을 하는 게이트웨이용입니다. 같은 세션은 여러 턴에서 값이 안정적이고 세션마다 서로 다릅니다. 비워두면 전송하지 않습니다.
+              헤더 이름을 입력하면 모든 요청에 이 HTTP 헤더가 포함되며, 값은 자동으로 <b>현재 세션의 session id</b>(chat 세션은 conv-12, worker는 exp3-worker-i87 등)로 채워집니다. session-id 헤더로 프롬프트 캐시 / 스티키 라우팅을 하는 게이트웨이용입니다. 같은 세션에서는 여러 턴에 걸쳐 값이 유지되고, 세션마다 값이 다릅니다. 비워두면 전송하지 않습니다.
             </p>
           </div>
 
@@ -621,17 +621,17 @@ function ProfileSheet({
             </div>
           </div>
           <p className="-mt-2 text-muted-foreground text-xs">
-            속도 제한 0 = 제한 없음, 모든 에이전트가 공유합니다. 컨텍스트 창 단위는 K(천 token)이며 0 = 기본 200K, 상한 1000(즉 1M)입니다. 너무 높게 잡으면 압축이 동작하지 않습니다.
+            속도 제한 0 = 제한 없음, 모든 에이전트가 공유합니다. 컨텍스트 창 단위는 K(천 토큰)이며 0 = 기본 200K, 상한 1000(즉 1M)입니다. 너무 높게 잡으면 압축이 동작하지 않습니다.
           </p>
 
           <div className="grid gap-3 rounded-lg border p-3">
             <div className="flex items-center justify-between gap-4">
               <div className="grid gap-0.5">
                 <Label htmlFor="p-priority" className="text-sm">
-                  폴링 우선순위
+                  순환 호출 우선순위
                 </Label>
                 <p className="text-muted-foreground text-xs">
-                  숫자가 클수록 먼저 선택됩니다. 활성 설정은 이 값과 무관하게 항상 1순위입니다. 우선순위가 같은 설정은 번갈아 선두에 서서 자연스럽게 할당량이 분산됩니다.
+                  숫자가 클수록 먼저 선택됩니다. 활성 설정은 이 값과 무관하게 항상 1순위입니다. 우선순위가 같은 설정은 번갈아 먼저 선택되어 할당량이 자연스럽게 분산됩니다.
                 </p>
               </div>
               <Input
@@ -644,18 +644,18 @@ function ProfileSheet({
             </div>
             <div className="flex items-center justify-between gap-4 border-t pt-3">
               <div className="grid gap-0.5">
-                <Label className="text-sm">폴링 제외</Label>
+                <Label className="text-sm">순환 호출 제외</Label>
                 <p className="text-muted-foreground text-xs">
-                  켜면 장애 조치 대상에서 제외됩니다(에이전트 / 태스크가 명시적으로 지정해 사용하는 것은 여전히 가능합니다). 특정 에이전트 전용으로만 쓰고 다른 작업이 실패할 때 소모되지 않기를 바라는 고가 설정에 적합합니다.
+                  켜면 장애 전환 대상에서 제외됩니다(에이전트 / 작업이 명시적으로 지정해 사용하는 것은 여전히 가능합니다). 특정 에이전트 전용으로만 쓰고 다른 작업이 실패할 때 소모되지 않게 하려는 고비용 설정에 적합합니다.
                 </p>
               </div>
-              <Switch checked={poolExclude} onCheckedChange={setPoolExclude} aria-label="폴링 제외" />
+              <Switch checked={poolExclude} onCheckedChange={setPoolExclude} aria-label="순환 호출 제외" />
             </div>
             <div className="flex items-center justify-between gap-4 border-t pt-3">
               <div className="grid gap-0.5">
                 <Label className="text-sm">스트리밍 출력 · streaming</Label>
                 <p className="text-muted-foreground text-xs">
-                  켜면(기본) 스트리밍 SSE로 동작하며 실행 중 실시간 진행 상황과 실시간 token 카운트를 볼 수 있습니다. 끄면 진짜 비스트리밍(stream:false, 응답을 한 번에 반환)으로 동작합니다 — 일부 게이트웨이의 SSE 구현 문제(빈 프레임 / 사고 필드 누락)를 우회할 수 있지만, 실행 중 실시간 진행 상황을 잃습니다.
+                  켜면(기본) 스트리밍 SSE로 동작하며 실행 중 실시간 진행 상황과 실시간 토큰 수를 볼 수 있습니다. 끄면 완전한 비스트리밍(stream:false, 응답을 한 번에 반환)으로 동작합니다 — 일부 게이트웨이의 SSE 구현 문제(빈 프레임 / 사고 필드 누락)를 우회할 수 있지만, 실행 중 실시간 진행 상황을 볼 수 없습니다.
                 </p>
               </div>
               <Switch checked={streaming} onCheckedChange={setStreaming} aria-label="스트리밍 출력" />
@@ -669,7 +669,7 @@ function ProfileSheet({
                   출력 상한 · max tokens
                 </Label>
                 <p className="text-muted-foreground text-xs">
-                  한 번의 응답에서 생성할 최대 token 수이며 매 요청마다 전송됩니다. 0(기본) = 이 필드를 보내지 않고 서버 기본값을 따릅니다. 위의 '컨텍스트 창'과는 다른 개념입니다: 그쪽은 모델의 전체 용량이고 로컬에서 압축 임계값을 계산할 때만 씁니다. 너무 작게 잡으면 추론 모델이 사고 단계에서 잘려 한 글자도 답하지 못할 수 있습니다.
+                  한 번의 응답에서 생성할 최대 토큰 수이며 매 요청마다 전송됩니다. 0(기본) = 이 필드를 보내지 않고 서버 기본값을 따릅니다. 위의 '컨텍스트 창'과는 다른 개념입니다. 컨텍스트 창은 모델의 전체 용량이며 로컬에서 압축 임계값을 계산할 때만 사용합니다. 너무 작게 잡으면 추론 모델이 사고 단계에서 잘려 아무것도 답하지 못할 수 있습니다.
                 </p>
               </div>
               <Input
@@ -715,7 +715,7 @@ function ProfileSheet({
                 </p>
               </div>
               <Select value={thinkingType} onValueChange={setThinkingType}>
-                <SelectTrigger className="w-32 shrink-0">
+                <SelectTrigger className="w-44 shrink-0">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -731,11 +731,11 @@ function ProfileSheet({
               <div className="grid gap-0.5">
                 <Label className="text-sm">사고 강도 · reasoning_effort</Label>
                 <p className="text-muted-foreground text-xs">
-                  독립적인 강도 단계입니다(OpenAI reasoning_effort / Anthropic output_config.effort). 일부 API는 thinking 필드가 없고 강도만으로 사고가 활성화되므로, 사고 스위치를 보내지 않고 따로 설정할 수 있습니다.
+                  독립적인 강도 단계입니다(OpenAI reasoning_effort / Anthropic output_config.effort). thinking 필드 없이 강도만으로 사고가 켜지는 API도 있으므로, 사고 스위치를 보내지 않은 상태에서 강도만 따로 설정할 수 있습니다.
                 </p>
               </div>
               <Select value={effort} onValueChange={setEffort}>
-                <SelectTrigger className="w-32 shrink-0">
+                <SelectTrigger className="w-44 shrink-0">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -848,7 +848,7 @@ export default function LLMPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button size="sm" variant="outline" onClick={() => setPoolOpen(true)}>
-            <ZapIcon /> 폴링 설정
+            <ZapIcon /> 모델 순환 호출 설정
             {poolOn && (
               <Badge variant="outline" className="ml-1 border-emerald-500/50 text-emerald-600 dark:text-emerald-400">
                 켜짐
@@ -914,7 +914,7 @@ export default function LLMPage() {
                     <div className="flex flex-wrap gap-x-3 gap-y-0.5 pl-6 text-muted-foreground text-xs">
                       {p.api_key_hint && <span>{p.api_key_hint}</span>}
                       <span>
-                        {p.rate_per_second}/초 ·  {p.rate_per_minute}/분
+                        {p.rate_per_second}/초 · {p.rate_per_minute}/분
                       </span>
                       {p.proxy && <span className="truncate">프록시 {p.proxy}</span>}
                       {p.reasoning_effort && (
@@ -923,7 +923,7 @@ export default function LLMPage() {
                       {/* 轮询相关的两个字段只在轮询开着时才有意义，关着时不占版面 */}
                       {poolOn &&
                         !p.is_default &&
-                        (p.pool_exclude ? <span>폴링 제외</span> : <span>우선순위 {p.priority ?? 0}</span>)}
+                        (p.pool_exclude ? <span>순환 호출 제외</span> : <span>우선순위 {p.priority ?? 0}</span>)}
                     </div>
 
                     <div className="mt-1 flex gap-2">

@@ -101,7 +101,7 @@ export default function AssetInterceptPage() {
     try {
       setRules(await api.assetInterceptRules());
     } catch {
-      toast.error("자산 차단 규칙을 불러오지 못했습니다");
+      toast.error("점검 제외 규칙을 불러오지 못했습니다");
     } finally {
       setLoading(false);
     }
@@ -153,7 +153,7 @@ export default function AssetInterceptPage() {
   }
 
   async function handleDelete(rule: AssetInterceptRule) {
-    if (!window.confirm(`자산 차단 규칙 「${rule.pattern}」를 삭제할까요?`)) return;
+    if (!window.confirm(`점검 제외 규칙 「${rule.pattern}」를 삭제할까요?`)) return;
     try {
       await api.deleteAssetInterceptRule(rule.id);
       toast.success("규칙이 삭제되었습니다");
@@ -180,16 +180,16 @@ export default function AssetInterceptPage() {
       <div className="flex items-center gap-2.5">
         <BanIcon className="h-5 w-5 shrink-0" />
         <div>
-          <h1 className="text-lg font-semibold leading-tight">자산 차단</h1>
+          <h1 className="text-lg font-semibold leading-tight">점검 제외 대상</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            전역 자산 블랙리스트: 매칭된 도메인 / IP / URL / 대역은 차단되며, 해당 대상에는 어떤 작업도 수행하지 않습니다
+            전역 점검 제외 목록: 매칭된 도메인 / IP / URL / 대역은 점검에서 제외되며, 해당 대상에는 어떤 작업도 수행하지 않습니다
           </p>
         </div>
       </div>
 
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs text-muted-foreground">
-          완전 일치와 부분 일치를 지원하는 도메인 / IP / URL, 그리고 CIDR 대역. 기본으로 정부(.gov / .gov.cn)와 교육(.edu / .edu.cn) 사이트를 부분 일치로 차단합니다
+          도메인 / IP / URL은 완전 일치와 부분 일치를 지원하며, CIDR 대역도 지정할 수 있습니다. 기본으로 정부(.gov / .gov.cn)와 교육(.edu / .edu.cn) 사이트를 부분 일치로 차단합니다
         </p>
         <Button onClick={openNew} size="sm" className="shrink-0">
           <PlusIcon className="h-4 w-4" />
@@ -204,7 +204,7 @@ export default function AssetInterceptPage() {
           ) : rules.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
               <BanIcon className="h-8 w-8 text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">자산 차단 규칙이 없습니다</p>
+              <p className="text-sm text-muted-foreground">점검 제외 규칙이 없습니다</p>
               <Button size="sm" variant="outline" onClick={openNew}>
                 <PlusIcon className="h-4 w-4" />
                 첫 규칙 만들기
@@ -272,8 +272,8 @@ export default function AssetInterceptPage() {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="right" className="flex flex-col gap-0 p-0 sm:max-w-md">
           <SheetHeader className="border-b px-6 py-4">
-            <SheetTitle>{editing ? "자산 차단 규칙 편집" : "새 자산 차단 규칙"}</SheetTitle>
-            <SheetDescription className="text-xs">이 규칙에 매칭된 대상 자산은 전역으로 차단됩니다</SheetDescription>
+            <SheetTitle>{editing ? "점검 제외 규칙 편집" : "새 점검 제외 규칙"}</SheetTitle>
+            <SheetDescription className="text-xs">이 규칙에 매칭된 점검 대상은 전역으로 점검에서 제외됩니다</SheetDescription>
           </SheetHeader>
 
           <div className="flex-1 min-h-0 overflow-y-auto px-6 py-5 space-y-5">

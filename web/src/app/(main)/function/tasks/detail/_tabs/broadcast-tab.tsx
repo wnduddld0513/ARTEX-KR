@@ -61,7 +61,7 @@ const KIND_META: Record<string, KindMeta> = {
     chip: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
   },
   intent: {
-    label: "의도",
+    label: "탐색 계획",
     icon: CompassIcon,
     dot: "bg-blue-500",
     chip: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
@@ -97,7 +97,7 @@ const FILTER_KINDS: ExploreKind[] = ["goal", "intent", "fact", "finding", "hint"
 
 const REL_LABEL: Record<string, string> = {
   spawns: "파생",
-  derived_from: "의도 체인",
+  derived_from: "탐색 계획 연결",
   yields: "산출",
   proves: "증명",
   covers: "압축",
@@ -159,7 +159,7 @@ function summaryOf(n: TaskNode): string {
 }
 
 function prettyPayload(raw?: string): string {
-  if (!raw?.trim()) return "(payload 없음)";
+  if (!raw?.trim()) return "(페이로드 없음)";
   try {
     return JSON.stringify(JSON.parse(raw), null, 2);
   } catch {
@@ -215,7 +215,7 @@ function AssetList({ assets, dense = false }: { assets: FindingAsset[]; dense?: 
   if (assets.length === 0) return null;
   return (
     <div>
-      <div className="mb-1.5 text-xs font-medium text-muted-foreground">관련 자산 · {assets.length}</div>
+      <div className="mb-1.5 text-xs font-medium text-muted-foreground">관련 점검 대상 · {assets.length}</div>
       <ul className="flex flex-wrap gap-1.5">
         {assets.map((a) => {
           // 运行时 a.type 可能是标签表未覆盖的类型,退回原始字符串。转一层类型让回退不被判成多余。
@@ -414,8 +414,8 @@ function BroadcastRow({
             <AssetList assets={assets[node.id] ?? []} />
             {(upstream.length > 0 || downstream.length > 0) && (
               <div className="flex flex-col gap-3 sm:flex-row">
-                <RelatedList title="업스트림 · 여기서 비롯됨" rows={upstream} refs={refs} assets={assets} />
-                <RelatedList title="다운스트림 · 여기서 생성됨" rows={downstream} refs={refs} assets={assets} />
+                <RelatedList title="선행 노드 · 여기에서 비롯됨" rows={upstream} refs={refs} assets={assets} />
+                <RelatedList title="후속 노드 · 여기에서 생성됨" rows={downstream} refs={refs} assets={assets} />
               </div>
             )}
             <div>
@@ -646,7 +646,7 @@ export function BroadcastTab({ taskId }: { taskId: string }) {
           className="flex w-full items-center justify-center gap-1.5 border-b bg-primary/10 py-1.5 text-xs font-medium text-primary hover:bg-primary/15"
         >
           <ArrowUpToLineIcon className="size-3.5" />
-          {pending > 99 ? "99+" : pending} 건의 새 브리핑 · 최신으로 이동
+          {pending > 99 ? "99+" : pending}건의 새 브리핑 · 최신으로 이동
         </button>
       )}
 
@@ -696,7 +696,7 @@ export function BroadcastTab({ taskId }: { taskId: string }) {
             <SelectGroup>
               {PAGE_SIZES.map((n) => (
                 <SelectItem key={n} value={String(n)}>
-                  {n} 개/페이지
+                  페이지당 {n}개
                 </SelectItem>
               ))}
             </SelectGroup>

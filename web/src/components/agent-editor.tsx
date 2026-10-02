@@ -133,7 +133,7 @@ export function AgentEditor({ agentKey, onSaved }: { agentKey: string; onSaved?:
   async function resetPrompt() {
     try {
       const r = await api.resetAgentPrompt(agentKey);
-      toast.success(`기본 제공값으로 복원했습니다(v${r.version})`);
+      toast.success(`기본값으로 복원했습니다(v${r.version})`);
       reload();
     } catch (e) {
       toast.error("복원 실패: " + (e as Error).message);
@@ -143,7 +143,7 @@ export function AgentEditor({ agentKey, onSaved }: { agentKey: string; onSaved?:
     try {
       const turns = Math.max(0, Math.floor(Number(wrapupTurns) || 0));
       await api.saveAgentWrapup(agentKey, wrapup, turns);
-      toast.success(wrapup.trim() || turns > 0 ? "마무리 설정을 저장했습니다(다음 실행부터 적용)" : "비웠습니다. 기본 제공값을 사용합니다");
+      toast.success(wrapup.trim() || turns > 0 ? "마무리 설정을 저장했습니다(다음 실행부터 적용)" : "비웠습니다. 기본값을 사용합니다");
       reload();
     } catch (e) {
       toast.error("저장 실패: " + (e as Error).message);
@@ -152,7 +152,7 @@ export function AgentEditor({ agentKey, onSaved }: { agentKey: string; onSaved?:
   async function resetWrapup() {
     try {
       await api.resetAgentWrapup(agentKey);
-      toast.success("기본 제공값으로 복원했습니다");
+      toast.success("기본값으로 복원했습니다");
       reload();
     } catch (e) {
       toast.error("복원 실패: " + (e as Error).message);
@@ -171,7 +171,7 @@ export function AgentEditor({ agentKey, onSaved }: { agentKey: string; onSaved?:
   async function resetTaskTimeoutWrapup() {
     try {
       await api.resetAgentTaskTimeoutWrapup(agentKey);
-      toast.success("기본 제공값으로 복원했습니다");
+      toast.success("기본값으로 복원했습니다");
       reload();
     } catch (e) {
       toast.error("복원 실패: " + (e as Error).message);
@@ -219,7 +219,7 @@ export function AgentEditor({ agentKey, onSaved }: { agentKey: string; onSaved?:
     applyVis(
       on ? mcpVisible.filter((x) => x !== id) : [...mcpVisible, id],
       skillVisible,
-      `${on ? "해제" : "설정"} MCP 「${name}」 표시`,
+      on ? `MCP 「${name}」 사용 권한을 해제했습니다` : `MCP 「${name}」 사용 권한을 부여했습니다`,
     );
   }
   function toggleSkill(name: string) {
@@ -227,7 +227,7 @@ export function AgentEditor({ agentKey, onSaved }: { agentKey: string; onSaved?:
     applyVis(
       mcpVisible,
       on ? skillVisible.filter((x) => x !== name) : [...skillVisible, name],
-      `${on ? "해제" : "설정"} Skill 「${name}」 표시`,
+      on ? `스킬 「${name}」 사용 권한을 해제했습니다` : `스킬 「${name}」 사용 권한을 부여했습니다`,
     );
   }
   async function toggleTool(t: Tool) {
@@ -242,7 +242,7 @@ export function AgentEditor({ agentKey, onSaved }: { agentKey: string; onSaved?:
         agents: nextAgents,
         enabled: t.enabled,
       });
-      toast.success(`${on ? "해제" : "연결"} 도구 「${t.key}」`);
+      toast.success(on ? `도구 「${t.key}」 연결을 해제했습니다` : `도구 「${t.key}」를 연결했습니다`);
       onSaved?.(); // 카드의 도구 수가 맞도록 목록을 새로 고칩니다
     } catch (e) {
       toast.error("도구 연결 저장 실패: " + (e as Error).message);
@@ -252,7 +252,7 @@ export function AgentEditor({ agentKey, onSaved }: { agentKey: string; onSaved?:
   }
 
   if (loaded && !detail) {
-    return <div className="text-muted-foreground p-6 text-center text-sm">Agent를 찾을 수 없습니다: {agentKey}</div>;
+    return <div className="text-muted-foreground p-6 text-center text-sm">에이전트를 찾을 수 없습니다: {agentKey}</div>;
   }
   // config is meaningless for the conversational main agent and the fixed-budget
   // goals decomposer; every other agent (workers, custom assistants) honors it.
@@ -269,7 +269,7 @@ export function AgentEditor({ agentKey, onSaved }: { agentKey: string; onSaved?:
 
   return (
     <Tabs defaultValue="prompt" className="flex min-h-0 flex-1 flex-col">
-      <TabsList className="mx-4 mt-2 w-fit">
+      <TabsList className="mx-4 mt-2 h-auto w-fit max-w-[calc(100%-2rem)] flex-wrap group-data-horizontal/tabs:h-auto">
         <TabsTrigger value="prompt">구성 및 프롬프트</TabsTrigger>
         <TabsTrigger value="wrapup">마무리 프롬프트</TabsTrigger>
         <TabsTrigger value="mcp">MCP</TabsTrigger>
@@ -301,7 +301,7 @@ export function AgentEditor({ agentKey, onSaved }: { agentKey: string; onSaved?:
                       </SelectContent>
                     </Select>
                     <span className="text-muted-foreground max-w-md text-xs">
-                      이 Agent에 고정 LLM 구성을 연결합니다(「구성 저장」을 눌러야 적용). 우선순위: Agent 연결 &gt; 작업/대화 지정 &gt; 전역 활성.
+                      이 에이전트에 고정 LLM 구성을 연결합니다(「구성 저장」을 눌러야 적용). 우선순위: 에이전트 연결 &gt; 작업/대화 지정 &gt; 전역 활성.
                     </span>
                   </div>
                 </div>
@@ -310,12 +310,12 @@ export function AgentEditor({ agentKey, onSaved }: { agentKey: string; onSaved?:
                 {showConfig && (
                   <>
                     <div className="grid gap-1.5">
-                      <Label htmlFor="max-turns" className="text-xs">최대 반복 횟수(0=무제한)</Label>
+                      <Label htmlFor="max-turns" className="text-xs">최대 반복 횟수(0 = 무제한)</Label>
                       <Input id="max-turns" type="number" min={0} className="h-8 w-32"
                         value={maxTurns} onChange={(e) => setMaxTurns(e.target.value)} />
                     </div>
                     <div className="grid gap-1.5">
-                      <Label htmlFor="run-seconds" className="text-xs">실행 시간(초, 0=무제한)</Label>
+                      <Label htmlFor="run-seconds" className="text-xs">실행 시간(초, 0 = 무제한)</Label>
                       <Input id="run-seconds" type="number" min={0} className="h-8 w-32"
                         value={runSecs} onChange={(e) => setRunSecs(e.target.value)} />
                     </div>
@@ -337,8 +337,8 @@ export function AgentEditor({ agentKey, onSaved }: { agentKey: string; onSaved?:
                     <Label htmlFor="web-search" className="text-sm">웹 검색</Label>
                     <span className="text-muted-foreground text-xs">
                       {webSearchGlobalOn
-                        ? "이 Agent에서 켜면(위의 저장을 눌러야 적용) web_search로 인터넷 검색을 사용할 수 있습니다"
-                        : "여기서 켜려면 먼저 「시스템 구성」에서 웹 검색을 켜고 백엔드를 구성해야 합니다"}
+                        ? "이 에이전트에서 켜면(위의 저장을 눌러야 적용) web_search로 인터넷 검색을 사용할 수 있습니다"
+                        : "여기서 켜려면 먼저 「시스템 설정」에서 웹 검색을 켜고 백엔드를 구성해야 합니다"}
                     </span>
                   </div>
                 </div>
@@ -351,9 +351,9 @@ export function AgentEditor({ agentKey, onSaved }: { agentKey: string; onSaved?:
                     onCheckedChange={setInteractiveShell}
                   />
                   <div className="grid gap-0.5">
-                    <Label htmlFor="interactive-shell" className="text-sm">대화형 Shell</Label>
+                    <Label htmlFor="interactive-shell" className="text-sm">대화형 셸</Label>
                     <span className="text-muted-foreground text-xs">
-                      이 Agent에서 켜면(위의 저장을 눌러야 적용) 영구 PTY 세션 도구(shell_open/send/read/close/list)로 msfconsole/ssh/REPL 같은 대화형 프로그램을 구동할 수 있습니다
+                      이 에이전트에서 켜면(위의 저장을 눌러야 적용) 영구 PTY 세션 도구(shell_open/send/read/close/list)로 msfconsole/ssh/REPL 같은 대화형 프로그램을 구동할 수 있습니다
                     </span>
                   </div>
                 </div>
@@ -384,7 +384,7 @@ export function AgentEditor({ agentKey, onSaved }: { agentKey: string; onSaved?:
           </div>
 
           <Textarea className="font-mono text-xs" rows={16} value={prompt}
-            placeholder="비워 두면 기본 제공 프롬프트를 사용합니다" onChange={(e) => setPrompt(e.target.value)} />
+            placeholder="비워 두면 기본 프롬프트를 사용합니다" onChange={(e) => setPrompt(e.target.value)} />
 
           <div className="flex flex-wrap gap-2">
             <Dialog>
@@ -437,7 +437,7 @@ export function AgentEditor({ agentKey, onSaved }: { agentKey: string; onSaved?:
                 </li>
               ))}
               {versions.length === 0 && (
-                <li className="text-muted-foreground text-xs">(저장된 버전 없음, 기본 제공값 사용)</li>
+                <li className="text-muted-foreground text-xs">(저장된 버전 없음, 기본값 사용)</li>
               )}
             </ul>
           </div>
@@ -503,27 +503,27 @@ export function AgentEditor({ agentKey, onSaved }: { agentKey: string; onSaved?:
       <TabsContent value="wrapup" className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
         <div className="grid gap-3">
           <p className="text-muted-foreground text-xs leading-relaxed">
-            이 Agent가 <b>시간 초과</b> 또는 <b>스텝 소진</b>으로 종료되면 시스템이 이 「마무리 프롬프트」를 주입해 마무리 라운드를 실행합니다:
-            인식했지만 저장하지 못한 내용을 먼저 기록하고, 마지막에 요약을 한 문장 출력합니다(미완성 방지). 비워 두면 기본 제공값을 사용합니다.
+            이 에이전트가 <b>시간 초과</b> 또는 <b>실행 한도 도달</b>로 종료되면 시스템이 이 「마무리 프롬프트」를 프롬프트에 포함해 마무리 라운드를 실행합니다:
+            인식했지만 저장하지 못한 내용을 먼저 기록하고, 마지막에 한 문장으로 요약합니다(미완성 방지). 비워 두면 기본값을 사용합니다.
           </p>
           <div className="flex items-center gap-2">
             <Label className="text-xs">마무리 프롬프트 본문</Label>
             {wrapup.trim() ? (
               <Badge variant="secondary" className="px-1.5 py-0">사용자 지정</Badge>
             ) : (
-              <Badge variant="outline" className="px-1.5 py-0">기본 제공값 사용</Badge>
+              <Badge variant="outline" className="px-1.5 py-0">기본값 사용</Badge>
             )}
           </div>
           <Textarea
             className="font-mono text-xs"
             rows={10}
             value={wrapup}
-            placeholder={wrapupDefault || "비워 두면 기본 제공 마무리 프롬프트를 사용합니다"}
+            placeholder={wrapupDefault || "비워 두면 기본 마무리 프롬프트를 사용합니다"}
             onChange={(e) => setWrapup(e.target.value)}
           />
           <div className="grid gap-1.5">
             <Label htmlFor="wrapup-turns" className="text-xs">
-              마무리 라운드 수(마무리 단계 자체가 최대 몇 라운드까지 실행할지; 0=기본 제공 {wrapupTurnsDefault}라운드 사용)
+              마무리 라운드 수(마무리 단계 자체가 최대 몇 라운드까지 실행할지; 0 = 기본값 {wrapupTurnsDefault}라운드 사용)
             </Label>
             <Input id="wrapup-turns" type="number" min={0} className="h-8 w-32"
               value={wrapupTurns} onChange={(e) => setWrapupTurns(e.target.value)} />
@@ -536,7 +536,7 @@ export function AgentEditor({ agentKey, onSaved }: { agentKey: string; onSaved?:
             <>
               <Separator />
               <div className="grid gap-1.5">
-                <Label className="text-muted-foreground text-xs">기본 제공값(읽기 전용, 참고용)</Label>
+                <Label className="text-muted-foreground text-xs">기본값(읽기 전용, 참고용)</Label>
                 <pre className="text-muted-foreground max-h-40 overflow-y-auto rounded-md border bg-muted/30 p-2 text-xs whitespace-pre-wrap">
                   {wrapupDefault}
                 </pre>
@@ -548,27 +548,27 @@ export function AgentEditor({ agentKey, onSaved }: { agentKey: string; onSaved?:
             <>
               <Separator className="my-2" />
               <p className="text-muted-foreground text-xs leading-relaxed">
-                <b>작업 시간 초과 마무리</b>(위의 per-run 마무리와는 <b>별개</b>): <b>작업 전체</b>가 시간 초과 한도에 도달해 곧 종료될 때 주입됩니다.
-                per-run과 의미가 반대인 경우가 많습니다(예: planner는 per-run에서 “멈추지 말고 계획을 계속”이라 하고, 작업 시간 초과에서는 “시간이 되었으니 멈추고 최종 판단”이라 합니다). 비워 두면 기본 제공값을 사용합니다.
+                <b>작업 시간 초과 마무리</b>(위의 per-run 마무리와는 <b>별개</b>): <b>작업 전체</b>가 시간 초과 한도에 도달해 곧 종료될 때 프롬프트에 포함됩니다.
+                per-run과 의미가 반대인 경우가 많습니다(예: 플래너는 per-run에서 “멈추지 말고 계획을 계속”이라 하고, 작업 시간 초과에서는 “시간이 되었으니 멈추고 최종 판단”이라 합니다). 비워 두면 기본값을 사용합니다.
               </p>
               <div className="flex items-center gap-2">
                 <Label className="text-xs">작업 시간 초과 마무리 프롬프트 본문</Label>
                 {ttWrapup.trim() ? (
                   <Badge variant="secondary" className="px-1.5 py-0">사용자 지정</Badge>
                 ) : (
-                  <Badge variant="outline" className="px-1.5 py-0">기본 제공값 사용</Badge>
+                  <Badge variant="outline" className="px-1.5 py-0">기본값 사용</Badge>
                 )}
               </div>
               <Textarea
                 className="font-mono text-xs"
                 rows={10}
                 value={ttWrapup}
-                placeholder={ttWrapupDefault || "비워 두면 기본 제공 작업 시간 초과 마무리 프롬프트를 사용합니다"}
+                placeholder={ttWrapupDefault || "비워 두면 기본 작업 시간 초과 마무리 프롬프트를 사용합니다"}
                 onChange={(e) => setTtWrapup(e.target.value)}
               />
               <div className="grid gap-1.5">
                 <Label htmlFor="tt-turns" className="text-xs">
-                  마무리 라운드 수(0=기본 제공 {ttTurnsDefault}라운드 사용)
+                  마무리 라운드 수(0 = 기본값 {ttTurnsDefault}라운드 사용)
                 </Label>
                 <Input id="tt-turns" type="number" min={0} className="h-8 w-32"
                   value={ttTurns} onChange={(e) => setTtTurns(e.target.value)} />
@@ -579,7 +579,7 @@ export function AgentEditor({ agentKey, onSaved }: { agentKey: string; onSaved?:
               </div>
               {ttWrapupDefault && (
                 <div className="grid gap-1.5">
-                  <Label className="text-muted-foreground text-xs">기본 제공값(읽기 전용, 참고용)</Label>
+                  <Label className="text-muted-foreground text-xs">기본값(읽기 전용, 참고용)</Label>
                   <pre className="text-muted-foreground max-h-40 overflow-y-auto rounded-md border bg-muted/30 p-2 text-xs whitespace-pre-wrap">
                     {ttWrapupDefault}
                   </pre>
@@ -590,9 +590,10 @@ export function AgentEditor({ agentKey, onSaved }: { agentKey: string; onSaved?:
         </div>
       </TabsContent>
 
-      {/* MCP 표시 여부 */}
+      {/* MCP 사용 권한 */}
       <TabsContent value="mcp" className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
-        <p className="text-muted-foreground mb-3 text-xs">이 Agent에게 표시할 MCP 서버를 선택하세요.</p>
+        <h4 className="mb-1 text-xs font-medium">에이전트별 사용 권한</h4>
+        <p className="text-muted-foreground mb-3 text-xs">각 에이전트가 사용할 수 있는 도구·스킬·MCP를 설정합니다. 이 에이전트가 사용할 MCP 서버를 선택하세요.</p>
         <div className="grid gap-2">
           {mcp.map((m) => (
             <label key={m.id} className="flex items-center gap-2 rounded-md border p-2 text-sm">
@@ -605,24 +606,26 @@ export function AgentEditor({ agentKey, onSaved }: { agentKey: string; onSaved?:
         </div>
       </TabsContent>
 
-      {/* 스킬 표시 여부 */}
+      {/* 스킬 사용 권한 */}
       <TabsContent value="skill" className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
-        <p className="text-muted-foreground mb-3 text-xs">이 Agent에게 표시할 Skill을 선택하세요.</p>
+        <h4 className="mb-1 text-xs font-medium">에이전트별 사용 권한</h4>
+        <p className="text-muted-foreground mb-3 text-xs">이 에이전트가 사용할 스킬을 선택하세요.</p>
         <div className="grid gap-2">
           {skills.map((s) => (
             <label key={s.name} className="flex items-center gap-2 rounded-md border p-2 text-sm">
               <Checkbox checked={skillVisible.includes(s.name)} onCheckedChange={() => toggleSkill(s.name)} />
               <span className="font-mono text-xs">{s.name}</span>
-              {s.description && <span className="text-muted-foreground ml-auto truncate text-xs">{s.description}</span>}
+              {s.description && <span className="text-muted-foreground ml-auto min-w-0 truncate text-xs" title={s.description}>{s.description}</span>}
             </label>
           ))}
-          {skills.length === 0 && <span className="text-muted-foreground text-xs">(Skill 없음)</span>}
+          {skills.length === 0 && <span className="text-muted-foreground text-xs">(스킬 없음)</span>}
         </div>
       </TabsContent>
 
       {/* 도구 연결 */}
       <TabsContent value="tools" className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
-        <p className="text-muted-foreground mb-3 text-xs">이 Agent에 연결할 내장 도구를 선택하세요.</p>
+        <h4 className="mb-1 text-xs font-medium">에이전트별 사용 권한</h4>
+        <p className="text-muted-foreground mb-3 text-xs">각 에이전트가 사용할 수 있는 도구·스킬·MCP를 설정합니다. 이 에이전트가 사용할 내장 도구를 선택하세요.</p>
         <div className="grid gap-2">
           {tools.map((t) => {
             const isTraffic = TRAFFIC_TOOL_KEYS.has(t.key);
@@ -651,7 +654,7 @@ export function AgentEditor({ agentKey, onSaved }: { agentKey: string; onSaved?:
                   <span className="text-muted-foreground ml-auto text-xs">트래픽 캡처를 켜야 함</span>
                 ) : (
                   t.description && (
-                    <span className="text-muted-foreground ml-auto line-clamp-1 max-w-[55%] text-xs">
+                    <span className="text-muted-foreground ml-auto line-clamp-1 max-w-[55%] text-xs" title={t.description}>
                       {t.description}
                     </span>
                   )
@@ -728,7 +731,7 @@ function DiffView({ oldText, newText }: { oldText: string; newText: string }) {
 }
 
 // AgentTriggersTab manages a custom agent's P3 triggers: list + add + delete.
-// 각 트리거는 (정기/finding 발견/목표 달성/작업 시간 초과/도구 호출, 복수 선택 가능) 발생 시 → 새 대화가 실행됩니다
+// 각 트리거는 (정기/취약점 발견/목표 달성/작업 시간 초과/도구 호출, 복수 선택 가능) 발생 시 → 새 대화가 실행됩니다
 // in parallel with the base user message + auto context appended by the backend.
 function AgentTriggersTab({ agentKey, agent }: { agentKey: string; agent?: Agent }) {
   const [triggers, setTriggers] = React.useState<AgentTrigger[]>([]);
@@ -904,7 +907,7 @@ function AgentTriggersTab({ agentKey, agent }: { agentKey: string; agent?: Agent
   function condLabel(t: AgentTrigger): string {
     const parts: string[] = [];
     if (t.interval_sec > 0) parts.push(`매 ${t.interval_sec}초`);
-    if (t.on_finding) parts.push("finding 발견");
+    if (t.on_finding) parts.push("취약점 발견");
     if (t.on_goal_met) parts.push("목표 달성");
     if (t.on_task_timeout) parts.push("작업 시간 초과");
     if (t.on_tool_call) parts.push(`도구 호출(${t.tool_names.length})`);
@@ -915,8 +918,8 @@ function AgentTriggersTab({ agentKey, agent }: { agentKey: string; agent?: Agent
   return (
     <div className="grid gap-4">
       <p className="text-muted-foreground text-xs">
-        트리거는 이 사용자 지정 Agent를 자동 실행합니다. 트리거마다 <b>새 대화를 만들어 실행</b>합니다(「대화」 페이지에서 확인 가능).
-        트리거 조건은 여러 개 선택할 수 있으며, 시스템이 「이번 트리거 사유 + 관련 작업/finding/목표」를 작성한 기본 메시지 뒤에 자동으로 붙입니다.
+        트리거는 이 사용자 지정 에이전트를 자동으로 실행합니다. 트리거마다 <b>새 대화를 만들어 실행</b>합니다(「대화」 페이지에서 확인 가능).
+        트리거 조건은 여러 개 선택할 수 있으며, 시스템이 「이번 트리거 사유 + 관련 작업/취약점/목표」를 기본 메시지 뒤에 자동으로 덧붙입니다.
       </p>
 
       {/* 트리거 후 처리 정책 */}
@@ -937,8 +940,8 @@ function AgentTriggersTab({ agentKey, agent }: { agentKey: string; agent?: Agent
                 <SelectValue />
               </SelectTrigger>
               <SelectContent position="popper">
-                <SelectItem value="serial">직렬(대기열, 한 번에 하나)</SelectItem>
-                <SelectItem value="parallel">병렬(각각 동시 대화)</SelectItem>
+                <SelectItem value="serial">직렬(대기열)</SelectItem>
+                <SelectItem value="parallel">병렬(동시 실행)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -967,7 +970,7 @@ function AgentTriggersTab({ agentKey, agent }: { agentKey: string; agent?: Agent
 
           {runMode === "parallel" && (
             <div className="grid gap-1">
-              <Label htmlFor="tr-maxpar" className="text-xs">최대 동시 실행(0=무제한)</Label>
+              <Label htmlFor="tr-maxpar" className="text-xs">최대 동시 실행(0 = 무제한)</Label>
               <Input
                 id="tr-maxpar"
                 type="number"
@@ -988,10 +991,10 @@ function AgentTriggersTab({ agentKey, agent }: { agentKey: string; agent?: Agent
           {runMode === "parallel"
             ? "병렬: 트리거마다 즉시 대화를 열어 동시에 실행하며 병합하지 않습니다. 최대 동시 실행을 넘는 트리거는 빈 자리를 기다립니다."
             : mergeMode === "by_task"
-              ? "직렬·작업별 병합: 같은 agent가 한 번에 하나 실행합니다. 대기 중 같은 작업의 이벤트 트리거는 하나의 대화로 병합됩니다."
+              ? "직렬·작업별 병합: 같은 에이전트가 한 번에 하나 실행합니다. 대기 중 같은 작업의 이벤트 트리거는 하나의 대화로 병합됩니다."
               : mergeMode === "all"
-                ? "직렬·전체 병합: 같은 agent가 한 번에 하나 실행합니다. 대기열에서 꺼낼 때 대기 중인 모든 트리거를 하나의 대화로 병합합니다."
-                : "직렬·병합 안 함: 같은 agent가 한 번에 하나 실행합니다. 트리거마다 각각 하나의 대화를 만듭니다."}
+                ? "직렬·전체 병합: 같은 에이전트가 한 번에 하나 실행합니다. 대기열에서 꺼낼 때 대기 중인 모든 트리거를 하나의 대화로 병합합니다."
+                : "직렬·병합 안 함: 같은 에이전트가 한 번에 하나 실행합니다. 트리거마다 각각 하나의 대화를 만듭니다."}
         </p>
       </div>
 
@@ -1017,7 +1020,7 @@ function AgentTriggersTab({ agentKey, agent }: { agentKey: string; agent?: Agent
                 <span className="text-muted-foreground text-xs">초</span>
               </div>
               <Textarea className="text-xs" rows={2} value={intervalMsg}
-                placeholder="정기 트리거 시 agent에게 보낼 메시지, 예: 모든 작업 점검" onChange={(e) => setIntervalMsg(e.target.value)} />
+                placeholder="정기 트리거 시 에이전트에게 보낼 메시지, 예: 모든 작업 점검" onChange={(e) => setIntervalMsg(e.target.value)} />
             </div>
           )}
         </div>
@@ -1025,11 +1028,11 @@ function AgentTriggersTab({ agentKey, agent }: { agentKey: string; agent?: Agent
         {/* finding */}
         <div className="grid gap-1.5">
           <label className="flex items-center gap-2 text-sm">
-            <Checkbox checked={onFinding} onCheckedChange={(v) => setOnFinding(!!v)} /> finding 발견 시 트리거
+            <Checkbox checked={onFinding} onCheckedChange={(v) => setOnFinding(!!v)} /> 취약점 발견 시 트리거
           </label>
           {onFinding && (
             <Textarea className="text-xs" rows={2} value={findingMsg}
-              placeholder="finding 발견 시 agent에게 보낼 메시지(시스템이 작업과 finding 상세를 함께 첨부)" onChange={(e) => setFindingMsg(e.target.value)} />
+              placeholder="취약점 발견 시 에이전트에게 보낼 메시지(시스템이 작업과 취약점 상세를 함께 첨부)" onChange={(e) => setFindingMsg(e.target.value)} />
           )}
         </div>
 
@@ -1040,7 +1043,7 @@ function AgentTriggersTab({ agentKey, agent }: { agentKey: string; agent?: Agent
           </label>
           {onGoalMet && (
             <Textarea className="text-xs" rows={2} value={goalMsg}
-              placeholder="목표 달성 시 agent에게 보낼 메시지(시스템이 작업과 달성한 목표를 함께 첨부)" onChange={(e) => setGoalMsg(e.target.value)} />
+              placeholder="목표 달성 시 에이전트에게 보낼 메시지(시스템이 작업과 달성한 목표를 함께 첨부)" onChange={(e) => setGoalMsg(e.target.value)} />
           )}
         </div>
 
@@ -1051,7 +1054,7 @@ function AgentTriggersTab({ agentKey, agent }: { agentKey: string; agent?: Agent
           </label>
           {onTaskTimeout && (
             <Textarea className="text-xs" rows={2} value={taskTimeoutMsg}
-              placeholder="작업 시간 초과 시 agent에게 보낼 메시지(시스템이 작업 번호와 목표를 함께 첨부)" onChange={(e) => setTaskTimeoutMsg(e.target.value)} />
+              placeholder="작업 시간 초과 시 에이전트에게 보낼 메시지(시스템이 작업 번호와 목표를 함께 첨부)" onChange={(e) => setTaskTimeoutMsg(e.target.value)} />
           )}
         </div>
 
@@ -1081,7 +1084,7 @@ function AgentTriggersTab({ agentKey, agent }: { agentKey: string; agent?: Agent
                 </div>
               </div>
               <Textarea className="text-xs" rows={2} value={toolCallMsg}
-                placeholder="도구 호출 시 agent에게 보낼 메시지(시스템이 작업 정보, 도구 인자와 반환 내용을 함께 첨부)" onChange={(e) => setToolCallMsg(e.target.value)} />
+                placeholder="도구 호출 시 에이전트에게 보낼 메시지(시스템이 작업 정보, 도구 인자와 반환 내용을 함께 첨부)" onChange={(e) => setToolCallMsg(e.target.value)} />
             </div>
           )}
         </div>
@@ -1093,7 +1096,7 @@ function AgentTriggersTab({ agentKey, agent }: { agentKey: string; agent?: Agent
           </label>
           {onTaskCreate && (
             <Textarea className="text-xs" rows={2} value={taskCreateMsg}
-              placeholder="작업 생성 시 agent에게 보낼 메시지(시스템이 작업 번호와 목표를 함께 첨부)" onChange={(e) => setTaskCreateMsg(e.target.value)} />
+              placeholder="작업 생성 시 에이전트에게 보낼 메시지(시스템이 작업 번호와 목표를 함께 첨부)" onChange={(e) => setTaskCreateMsg(e.target.value)} />
           )}
         </div>
 
@@ -1131,7 +1134,7 @@ function AgentTriggersTab({ agentKey, agent }: { agentKey: string; agent?: Agent
               </div>
               <div className="text-muted-foreground grid gap-0.5 text-xs">
                 {t.interval_sec > 0 && t.interval_message && <div className="line-clamp-1">정기: {t.interval_message}</div>}
-                {t.on_finding && t.finding_message && <div className="line-clamp-1">finding: {t.finding_message}</div>}
+                {t.on_finding && t.finding_message && <div className="line-clamp-1">취약점: {t.finding_message}</div>}
                 {t.on_goal_met && t.goal_message && <div className="line-clamp-1">목표: {t.goal_message}</div>}
                 {t.on_task_timeout && t.task_timeout_message && <div className="line-clamp-1">시간 초과: {t.task_timeout_message}</div>}
                 {t.on_task_create && t.task_create_message && <div className="line-clamp-1">작업 생성: {t.task_create_message}</div>}

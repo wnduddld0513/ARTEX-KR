@@ -39,7 +39,7 @@ const intent: Record<string, StatusMeta> = {
   // blocked = 모델/API/네트워크 장애로 재시도를 모두 소진한 상태. 이 의도는 사실상 제대로 탐색되지 못했다(목표 차단이 아님).
   blocked: { label: "실행 오류", tone: "red" },
   // exhausted = 스텝/시간 예산에 도달해 중도 중단됐고 일부 결과만 기록된 상태(방향을 다 탐색한 것이 아님).
-  exhausted: { label: "예산 소진", tone: "violet" },
+  exhausted: { label: "실행 한도 도달", tone: "violet" },
   // stopped = 과거 소프트 삭제 상태(노드는 보존, 이력 데이터).
   stopped: { label: "중지됨", tone: "slate" },
   // deleted = 사용자가 해당 의도를 가삭제한 상태(노드와 계보는 보존, 삭제 사유는 delete_reason 필드 참조).
@@ -64,7 +64,7 @@ const severity: Record<string, StatusMeta> = {
 };
 
 const finding: Record<string, StatusMeta> = {
-  pending: { label: "미처리", tone: "amber" },
+  pending: { label: "처리 대기", tone: "amber" },
   in_progress: { label: "처리 중", tone: "blue" },
   confirmed: { label: "확인됨", tone: "red" },
   resolved: { label: "처리 완료", tone: "green" },
@@ -78,8 +78,8 @@ const finding: Record<string, StatusMeta> = {
 const engine: Record<string, StatusMeta> = {
   exploring: { label: "탐색 중", tone: "blue" },
   paused: { label: "일시중지", tone: "amber" },
-  stalled: { label: "정체", tone: "red" },
-  idle: { label: "유휴", tone: "neutral" },
+  stalled: { label: "진행 멈춤", tone: "red" },
+  idle: { label: "대기 중", tone: "neutral" },
 };
 
 const goal: Record<string, StatusMeta> = {
@@ -94,7 +94,7 @@ const audit: Record<string, StatusMeta> = {
 };
 
 const node: Record<string, StatusMeta> = {
-  observed: { label: "관측", tone: "slate" },
+  observed: { label: "발견됨", tone: "slate" },
   confirmed: { label: "확인", tone: "green" },
   tombstoned: { label: "폐기", tone: "neutral" },
 };

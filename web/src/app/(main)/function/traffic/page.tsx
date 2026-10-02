@@ -461,7 +461,7 @@ export default function TrafficPage() {
           size="sm"
           className="h-8"
           disabled={!hostQ || deleting}
-          title={hostQ ? undefined : "먼저 왼쪽에서 대상을 선택하거나 host를 입력하세요"}
+          title={hostQ ? undefined : "먼저 왼쪽에서 대상을 선택하거나 호스트를 입력하세요"}
           onClick={() => setDeleteMode("filter")}
         >
           <Trash2Icon className="size-3.5" />
@@ -509,7 +509,7 @@ export default function TrafficPage() {
           <SelectContent>
             {PAGE_SIZES.map((n) => (
               <SelectItem key={n} value={String(n)}>
-                {n} / 페이지
+                페이지당 {n}개
               </SelectItem>
             ))}
           </SelectContent>
@@ -789,7 +789,7 @@ export default function TrafficPage() {
                   건(요청/응답 원문 포함)을 모두 영구적으로 삭제하며 현재 필터 조건은 무시합니다. 이 작업은 되돌릴 수 없습니다. 취약점에 연결된 트래픽 증거는 별도의 증거 저장소에 보관되므로 영향을 받지 않습니다.
                   <br />
                   <span className="text-muted-foreground">
-                    비우면 저장소도 함께 압축되어 인덱스가 차지하던 디스크 공간이 시스템에 반환됩니다. 이 동안 트래픽 기록은 잠시 중단됩니다.
+                    비우면 저장소도 함께 압축되어 인덱스가 차지하던 디스크 공간이 시스템에 반환됩니다. 이 과정에서 트래픽 기록은 잠시 중단됩니다.
                   </span>
                 </>
               )}

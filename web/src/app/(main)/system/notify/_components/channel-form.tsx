@@ -120,7 +120,7 @@ export function ConfigField({
   const hint = masked ? (
     <p className="text-muted-foreground flex items-center gap-1 text-xs">
       <CheckIcon className="size-3" />
-      저장됨{maskedTail ? `(끝자리 ${maskedTail})` : ""} · 새 값을 입력하면 덮어쓰고, 비우면 해당 항목이 삭제됩니다
+      저장됨{maskedTail ? `(끝자리 ${maskedTail})` : ""} · 새 값을 입력하면 덮어쓰고, 비워두면 해당 항목이 삭제됩니다
     </p>
   ) : (
     def.help && <p className="text-muted-foreground text-xs">{def.help}</p>
@@ -143,8 +143,8 @@ export function FilterSummary({ filter }: { filter: NotificationFilter }) {
   }
   if (filter.vulnclass_include?.length) parts.push(`유형 포함: ${filter.vulnclass_include.length}개`);
   if (filter.vulnclass_exclude?.length) parts.push(`제외 ${filter.vulnclass_exclude.length}개`);
-  if (filter.task_ids?.length) parts.push(`${filter.task_ids.length}개 태스크`);
-  if (filter.asset_ids?.length) parts.push(`${filter.asset_ids.length}개 자산`);
+  if (filter.task_ids?.length) parts.push(`${filter.task_ids.length}개 작업`);
+  if (filter.asset_ids?.length) parts.push(`${filter.asset_ids.length}개 점검 대상`);
   if (filter.on_status_change) parts.push("상태 변경 포함");
   if (parts.length === 0) {
     return <p className="text-muted-foreground text-sm">모든 취약점</p>;

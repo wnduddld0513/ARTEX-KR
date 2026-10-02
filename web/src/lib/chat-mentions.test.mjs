@@ -40,4 +40,11 @@ test("Korean search and tokens preserve references and legacy history", () => {
   assert.equal(token, "@[취약점#12 검증 대상]");
   assert.equal(selectedMentions(token)[0].label, "취약점 #12 · 검증 대상");
   assert.equal(selectedMentions("@[漏洞#12 기존 기록]")[0].label, "취약점 #12 · 기존 기록");
+  assert.equal(mentionSearch("점검 대상 example.com").kind, "asset");
+  assert.equal(mentionSearch("자산 example.com").kind, "asset");
+  const assetToken = mentionToken({ kind: "asset", id: 7, label: "example.com" });
+  assert.equal(assetToken, "@[점검 대상#7 example.com]");
+  assert.equal(selectedMentions(assetToken)[0].label, "점검 대상 #7 · example.com");
+  assert.equal(selectedMentions("@[자산#7 기존 기록]")[0].label, "점검 대상 #7 · 기존 기록");
+  assert.equal(selectedMentions("@[资产#7 기존 기록]")[0].label, "점검 대상 #7 · 기존 기록");
 });

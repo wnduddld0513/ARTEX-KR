@@ -290,11 +290,11 @@ export default function NotifyPage() {
       {meta && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           <StatTile label="채널" value={`${meta.stats.channels_on} / ${meta.stats.channels}`} hint="사용 / 전체" />
-          <StatTile label="오늘 전달됨" value={String(meta.stats.sent_today)} />
-          <StatTile label="전송 대기" value={String(meta.stats.pending)} />
+          <StatTile label="오늘 발송됨" value={String(meta.stats.sent_today)} />
+          <StatTile label="발송 대기" value={String(meta.stats.pending)} />
           <StatTile label="실패" value={String(meta.stats.failed)} tone={meta.stats.failed > 0 ? "red" : undefined} />
           <StatTile
-            label="최장 적체"
+            label="최대 적체 시간"
             value={formatBacklog(meta.stats.backlog_age_ms)}
             // 积压年龄比积压条数有用得多：积压 3 条可以是从 3 秒到 3 小时。
             hint={meta.stats.backlog_age_ms > 5 * 60_000 ? "푸시가 멈춘 것 같습니다" : undefined}
@@ -342,7 +342,7 @@ export default function NotifyPage() {
       <Tabs value={tab} onValueChange={(v) => setTab(v as "channels" | "deliveries")} className="flex flex-col gap-4">
         <TabsList>
           <TabsTrigger value="channels">채널</TabsTrigger>
-          <TabsTrigger value="deliveries">전달 기록</TabsTrigger>
+          <TabsTrigger value="deliveries">발송 기록</TabsTrigger>
         </TabsList>
 
         <TabsContent value="channels">
@@ -455,7 +455,7 @@ export default function NotifyPage() {
                 <Label htmlFor="n-name">채널 이름</Label>
                 <Input
                   id="n-name"
-                  placeholder="긴급 대응방 / 일일 브리핑방"
+                  placeholder="긴급 대응 그룹 / 일일 브리핑 그룹"
                   value={form.name}
                   onChange={(e) => setF({ name: e.target.value })}
                 />
@@ -463,7 +463,7 @@ export default function NotifyPage() {
 
               {fields.length === 0 ? (
                 <p className="text-muted-foreground text-sm">
-                  이 채널의 폼이 아직 정의되지 않았습니다(프런트엔드에 CHANNEL_FIELDS 항목 누락). 보완한 뒤 다시 시도하세요.
+                  이 채널의 폼이 아직 정의되지 않았습니다(프런트엔드에 CHANNEL_FIELDS 항목 누락). 항목을 추가한 뒤 다시 시도하세요.
                 </p>
               ) : (
                 fields.map((d) => (
@@ -484,8 +484,8 @@ export default function NotifyPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="realtime">실시간 · 취약점마다 개별 전송</SelectItem>
-                    <SelectItem value="digest">요약 · 주기마다 하나로 합쳐 전송</SelectItem>
+                    <SelectItem value="realtime">실시간 · 취약점마다 개별 발송</SelectItem>
+                    <SelectItem value="digest">요약 · 주기마다 하나로 합쳐서 발송</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-muted-foreground text-xs">
@@ -504,7 +504,7 @@ export default function NotifyPage() {
                   onChange={(e) => setF({ ratePerMin: e.target.value })}
                 />
                 <p className="text-muted-foreground text-xs">
-                  비워두면 채널 기본값을 사용합니다. 0은 제한 없음입니다. 한도를 넘겨도 메시지가 유실되지 않고 전송만 지연됩니다.
+                  비워두면 채널 기본값을 사용합니다. 0은 제한 없음입니다. 한도를 넘겨도 메시지가 유실되지 않고 발송만 지연됩니다.
                 </p>
               </div>
 
@@ -552,7 +552,7 @@ export default function NotifyPage() {
                     <p className="text-muted-foreground text-xs">제외가 포함보다 우선합니다. 동시에 해당하면 제외됩니다.</p>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="n-tasks">태스크 ID 제한</Label>
+                    <Label htmlFor="n-tasks">작업 ID 제한</Label>
                     <Input
                       id="n-tasks"
                       placeholder="1, 2, 3"
@@ -561,14 +561,14 @@ export default function NotifyPage() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="n-assets">자산 ID 제한</Label>
+                    <Label htmlFor="n-assets">점검 대상 ID 제한</Label>
                     <Input
                       id="n-assets"
                       placeholder="10, 11"
                       value={form.assetIDsText}
                       onChange={(e) => setF({ assetIDsText: e.target.value })}
                     />
-                    <p className="text-muted-foreground text-xs">태스크/자산을 비워두면 제한 없음이며, 입력하면 취약점과 교집합이 있어야 합니다.</p>
+                    <p className="text-muted-foreground text-xs">작업/점검 대상을 비워두면 제한 없음이며, 입력하면 취약점이 해당 작업/점검 대상과 연결되어 있어야 합니다.</p>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Switch
@@ -593,7 +593,7 @@ export default function NotifyPage() {
               </Button>
               {editing && (
                 <Button variant="outline" onClick={testChannel} disabled={testing}>
-                  <SendIcon /> 테스트 메시지 전송
+                  <SendIcon /> 테스트 메시지 발송
                 </Button>
               )}
             </div>

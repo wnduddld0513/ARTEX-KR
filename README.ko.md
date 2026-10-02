@@ -1,6 +1,6 @@
 # ARTEX-KR
 
-한국어 안내는 [README.md](README.md)로 통합했습니다. 이 문서는 안내를 찾는 분을 위한 짧은 안내입니다.
+한국어 안내는 [README.md](README.md)에 통합했습니다. 이 문서는 README.md로 안내하는 짧은 문서입니다.
 
 [README.md](README.md)에 다음 내용이 모두 들어 있습니다.
 

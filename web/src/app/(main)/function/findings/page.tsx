@@ -68,13 +68,13 @@ import {
 const FINDING_LIST_PREFERENCE_KEY = "artex_finding_list_preferences";
 
 // 목록 뷰: flat = 작업을 가로지르는 평면 대형 표(기본), grouped = 작업별 그룹 접기,
-// asset = 왼쪽 자산 트리 + 오른쪽 해당 하위 트리의 발견.
+// asset = 왼쪽 점검 대상 트리 + 오른쪽 해당 하위 트리의 취약점.
 type FindingView = "flat" | "grouped" | "asset";
 
 const FINDING_VIEWS: FindingView[] = ["flat", "grouped", "asset"];
 
-// 자산 트리의 1회성 스냅샷입니다. 다른 두 뷰와 달리 자산 뷰는 폴링하지 않으며,
-// 뷰에 들어가거나, 필터를 바꾸거나, 이 페이지에서 발견을 수정한 뒤에만 다시 조회합니다.
+// 점검 대상 트리의 1회성 스냅샷입니다. 다른 두 뷰와 달리 점검 대상 뷰는 폴링하지 않으며,
+// 뷰에 들어가거나, 필터를 바꾸거나, 이 페이지에서 취약점을 수정한 뒤에만 다시 조회합니다.
 interface AssetTreeState {
   nodes: FindingAssetNode[];
   findingTotal: number;
@@ -234,7 +234,7 @@ export default function FindingsPage() {
     return () => window.clearTimeout(timer);
   }, [search]);
 
-  // setFindings는 두 뷰 캐시에 있는 같은 발견을 함께 갱신해, 뷰를 바꿔도 오래된 상태가 보이지 않게 합니다.
+  // setFindings는 두 뷰 캐시에 있는 같은 취약점을 함께 갱신해, 뷰를 바꿔도 오래된 상태가 보이지 않게 합니다.
   const setFindings = React.useCallback((update: (current: Finding[]) => Finding[]) => {
     setFlat((current) => ({ ...current, items: update(current.items) }));
     setGroupFindings((current) => {
@@ -311,7 +311,7 @@ export default function FindingsPage() {
   groupFindingsRef.current = groupFindings;
   visibleGroupKeysRef.current = new Set(groups.map(findingGroupKey));
 
-  // 자산 뷰의 오른쪽 목록 = 평면 목록 + 선택한 하위 트리 필터이므로 두 뷰가 목록 상태를 공유합니다.
+  // 점검 대상 뷰의 오른쪽 목록 = 평면 목록 + 선택한 하위 트리 필터이므로 두 뷰가 목록 상태를 공유합니다.
   const activeAssetScope = view === "asset" ? assetScope : null;
 
   // loadFlat은 평면 뷰의 현재 페이지를 가져옵니다. task 필터는 백엔드가 처리하며 그룹 뷰와 같은 필터 조건을 씁니다.
@@ -341,7 +341,7 @@ export default function FindingsPage() {
     }
   }, [activeAssetScope, filterFingerprint, flatPage, flatPageSize, severity, status, vulnclass, task, query, sort]);
 
-  // loadAssetTree는 자산 트리 전체를 가져옵니다. 트리는 선택한 노드에 따라 바뀌지 않으므로
+  // loadAssetTree는 점검 대상 트리 전체를 가져옵니다. 트리는 선택한 노드에 따라 바뀌지 않으므로
   // (바뀌면 선택할 때마다 한 줄로 줄어듭니다) 여기서는 assetScope를 넘기지 않습니다.
   const loadAssetTree = React.useCallback(async () => {
     const requestFilter = filterFingerprint;
@@ -362,7 +362,7 @@ export default function FindingsPage() {
     } catch (e) {
       if (request !== assetTreeRequest.current || activeFilterFingerprint.current !== requestFilter) return;
       setAssetTree((current) => ({ ...current, loading: false }));
-      toast.error(`자산 트리를 불러오지 못했습니다: ${(e as Error).message}`);
+      toast.error(`점검 대상 트리를 불러오지 못했습니다: ${(e as Error).message}`);
     }
   }, [filterFingerprint, severity, status, vulnclass, task, query, sort]);
 
@@ -473,11 +473,11 @@ export default function FindingsPage() {
     [expandedGroups, groupFindings, loadGroup],
   );
 
-  // 인라인 수정 후 현재 뷰를 갱신합니다: 평면 뷰는 현재 페이지를 다시 가져오고, 그룹 뷰는 그룹 헤더와 해당 발견이 속한 그룹을 갱신합니다.
+  // 인라인 수정 후 현재 뷰를 갱신합니다: 평면 뷰는 현재 페이지를 다시 가져오고, 그룹 뷰는 그룹 헤더와 해당 취약점이 속한 그룹을 갱신합니다.
   const refreshAfterMutation = React.useCallback(
     (finding: Finding, removed = false) => {
       if (view === "asset") {
-        // 자산 뷰는 폴링하지 않으므로 수정 후 트리 집계도 함께 다시 계산합니다.
+        // 점검 대상 뷰는 폴링하지 않으므로 수정 후 트리 집계도 함께 다시 계산합니다.
         void loadFlat();
         void loadAssetTree();
         return;
@@ -508,31 +508,31 @@ export default function FindingsPage() {
     setGroupFindings({});
     setFlatPage(1);
     setFlat(EMPTY_FLAT_STATE);
-    // 필터가 바뀌면 트리도 바뀌어 기존에 선택한 노드가 없을 수 있으므로 "전체 자산"으로 돌아갑니다.
+    // 필터가 바뀌면 트리도 바뀌어 기존에 선택한 노드가 없을 수 있으므로 "전체 점검 대상"으로 돌아갑니다.
     setAssetScope(null);
     setAssetTree(EMPTY_ASSET_TREE);
   }, [filterFingerprint]);
 
-  // 자산 노드를 바꾸면 결과 집합이 달라지므로 첫 페이지로 돌아갑니다.
+  // 점검 대상 노드를 바꾸면 결과 집합이 달라지므로 첫 페이지로 돌아갑니다.
   React.useEffect(() => {
     void assetScope;
     setFlatPage(1);
   }, [assetScope]);
 
-  // 자산 트리는 뷰 진입 / 필터 변경 시 한 번만 조회하고(이 페이지에서 발견을 수정하면
+  // 점검 대상 트리는 뷰 진입 / 필터 변경 시 한 번만 조회하고(이 페이지에서 취약점을 수정하면
   // refreshAfterMutation이 다시 가져옴), 폴링하지 않습니다.
   React.useEffect(() => {
     if (!preferencesHydrated || view !== "asset") return;
-    void activeRetestFingerprint; // 재검증이 끝나면 상태 필터 기준 자산 집계가 달라질 수 있습니다.
+    void activeRetestFingerprint; // 재검증이 끝나면 상태 필터 기준 점검 대상 집계가 달라질 수 있습니다.
     void loadAssetTree();
   }, [activeRetestFingerprint, loadAssetTree, preferencesHydrated, view]);
 
   // 현재 뷰만 폴링합니다: 평면 뷰는 현재 페이지를, 그룹 뷰는 그룹 헤더와 펼쳐진 각 그룹을 갱신합니다(각 그룹의 페이지는 서로 독립).
-  // 자산 뷰는 한 번만 조회하며(아래 return 참고), 왼쪽 트리는 탐색 구조라 5초마다 다시 계산할 필요가 없습니다.
+  // 점검 대상 뷰는 한 번만 조회하며(아래 return 참고), 왼쪽 트리는 탐색 구조라 5초마다 다시 계산할 필요가 없습니다.
   // 환경설정 수화가 끝난 뒤 첫 요청을 보냅니다. 그렇지 않으면 기본 뷰/필터로 한 번 헛되이 가져옵니다.
   React.useEffect(() => {
     if (!preferencesHydrated) return;
-    void activeRetestFingerprint; // 폴링하지 않는 자산 뷰도 재검증이 끝나면 처리 상태를 갱신합니다.
+    void activeRetestFingerprint; // 폴링하지 않는 점검 대상 뷰도 재검증이 끝나면 처리 상태를 갱신합니다.
     const refresh = () => {
       if (view === "flat" || view === "asset") {
         if (!flatStateRef.current.loading) void loadFlat();
@@ -607,7 +607,7 @@ export default function FindingsPage() {
       setFindings((cur) => cur.map((x) => (isSameFinding(x, f) ? { ...x, status: next } : x)));
       try {
         await api.setFindingStatus(f.finding_id, next);
-        toast.success(`"${statusMeta("finding", next).label}"(으)로 표시했습니다`);
+        toast.success(`다음 상태로 표시했습니다: ${statusMeta("finding", next).label}`);
         // refresh stat cards (pending count) and drop the row if it no longer matches the status filter
         api
           .findingStats()
@@ -738,8 +738,8 @@ export default function FindingsPage() {
       const result = await api.deepenFinding(deepenFinding.finding_id, deepenDescription.trim());
       toast.success(
         result.queued
-          ? `심층 분석 의도 #${result.intent_id}를 작업 큐에 넣었습니다`
-          : `높은 우선순위 Worker 의도 #${result.intent_id}를 만들었습니다`,
+          ? `심층 분석 탐색 계획 #${result.intent_id}을(를) 작업 큐에 넣었습니다`
+          : `우선순위가 높은 워커 탐색 계획 #${result.intent_id}을(를) 만들었습니다`,
       );
       refreshAfterMutation(deepenFinding);
       setDeepenFinding(null);
@@ -752,7 +752,7 @@ export default function FindingsPage() {
   }
 
   const statCards = [
-    { label: "발견 총계", value: stats.total, icon: BugIcon },
+    { label: "전체 취약점", value: stats.total, icon: BugIcon },
     { label: "미처리", value: stats.pending, tone: "text-amber-500", icon: ClockIcon },
     { label: "치명적", value: stats.critical, tone: "text-rose-600", icon: ShieldAlertIcon },
     { label: "높음", value: stats.high, tone: "text-red-500", icon: TriangleAlertIcon },
@@ -761,7 +761,7 @@ export default function FindingsPage() {
   ];
 
   // 내보내기 대화상자의 "현재 필터" 건수: 두 뷰의 필터는 같고 집계 출처만 다릅니다.
-  // 평면 뷰와 자산 뷰는 flat 목록 상태를 공유하고, 그룹 뷰는 그룹 API의 finding_total을 사용합니다.
+  // 평면 뷰와 점검 대상 뷰는 flat 목록 상태를 공유하고, 그룹 뷰는 그룹 API의 finding_total을 사용합니다.
   const filteredTotal = view === "grouped" ? total : flat.total;
   const assetPath = React.useMemo(
     () => (view === "asset" ? assetPathOf(assetTree.nodes, assetScope) : []),
@@ -786,7 +786,7 @@ export default function FindingsPage() {
     onDelete: deleteFinding,
   };
 
-  // 평면 뷰와 자산 뷰의 오른쪽은 같은 표 + 같은 페이지 처리를 쓰며 필터 조건만 다릅니다.
+  // 평면 뷰와 점검 대상 뷰의 오른쪽은 같은 표 + 같은 페이지 처리를 쓰며 필터 조건만 다릅니다.
   const flatListCard = (
     <Card className="gap-0 py-0">
       <CardContent className="px-0">
@@ -818,14 +818,14 @@ export default function FindingsPage() {
     <div className="flex flex-1 flex-col gap-4 md:gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">발견</h1>
-          <p className="text-muted-foreground text-sm">작업을 가로지르는 취약점 요약</p>
+          <h1 className="text-xl font-semibold tracking-tight">취약점</h1>
+          <p className="text-muted-foreground text-sm">여러 작업에 걸친 취약점 요약</p>
         </div>
         <Tabs value={view} onValueChange={(v) => setView(v as FindingView)}>
           <TabsList>
-            <TabsTrigger value="flat">전체 발견</TabsTrigger>
+            <TabsTrigger value="flat">전체 취약점</TabsTrigger>
             <TabsTrigger value="grouped">작업별 그룹</TabsTrigger>
-            <TabsTrigger value="asset">자산별</TabsTrigger>
+            <TabsTrigger value="asset">점검 대상별</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
@@ -990,7 +990,7 @@ export default function FindingsPage() {
                   className={cn("hover:text-foreground", assetScope === null && "font-medium text-foreground")}
                   onClick={() => setAssetScope(null)}
                 >
-                  전체 자산
+                  전체 점검 대상
                 </button>
                 {assetPath.map((node) => (
                   <React.Fragment key={node.key}>
@@ -1110,7 +1110,7 @@ export default function FindingsPage() {
             })}
             {groups.length === 0 && (
               <Card>
-                <CardContent className="py-12 text-center text-sm text-muted-foreground">일치하는 발견이 없습니다.</CardContent>
+                <CardContent className="py-12 text-center text-sm text-muted-foreground">일치하는 취약점이 없습니다.</CardContent>
               </Card>
             )}
             <TablePagination
@@ -1159,25 +1159,25 @@ export default function FindingsPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>취약점 심층 활용</DialogTitle>
+            <DialogTitle>취약점 심층 분석</DialogTitle>
             <DialogDescription className="break-words">
-              원래 작업 #{deepenFinding?.task_id}에 우선순위 10의 Worker 의도를 만들어 현재 취약점을 기반으로 2차 검증을 진행합니다:
+              원래 작업 #{deepenFinding?.task_id}에 우선순위 10의 워커 탐색 계획을 만들어 현재 취약점을 대상으로 2차 검증을 진행합니다:{" "}
               {deepenFinding?.name || deepenFinding?.vulnclass || deepenFinding?.summary}
             </DialogDescription>
           </DialogHeader>
           <FieldGroup>
             <Field>
-              <FieldLabel htmlFor="finding-deepen-description">활용 설명</FieldLabel>
+              <FieldLabel htmlFor="finding-deepen-description">심층 분석 설명</FieldLabel>
               <Textarea
                 id="finding-deepen-description"
                 value={deepenDescription}
                 onChange={(event) => setDeepenDescription(event.target.value)}
                 maxLength={4000}
-                placeholder="검증할 활용 경로, 경계 조건, 대상 또는 기대 증거를 설명하세요"
+                placeholder="검증할 공격 경로와 경계 조건, 대상 또는 기대 증거를 설명하세요"
                 disabled={deepening}
               />
               <FieldDescription className="flex justify-between gap-3">
-                <span>새 의도는 이 취약점의 자산 앵커를 상속합니다.</span>
+                <span>새 탐색 계획은 이 취약점의 점검 대상 앵커를 상속합니다.</span>
                 <span className="shrink-0 tabular-nums">{deepenDescription.length} / 4000</span>
               </FieldDescription>
             </Field>
@@ -1195,7 +1195,7 @@ export default function FindingsPage() {
             </Button>
             <Button onClick={submitDeepen} disabled={deepening || !deepenDescription.trim()}>
               {deepening && <Spinner data-icon="inline-start" />}
-              심층 분석 의도 만들기
+              심층 분석 탐색 계획 만들기
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1204,7 +1204,7 @@ export default function FindingsPage() {
       <Dialog open={exportOpen} onOpenChange={setExportOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>발견 내보내기</DialogTitle>
+            <DialogTitle>취약점 내보내기</DialogTitle>
             <DialogDescription>내보낼 범위와 형식을 선택하면 생성 후 브라우저가 자동으로 다운로드합니다.</DialogDescription>
           </DialogHeader>
 
@@ -1213,8 +1213,7 @@ export default function FindingsPage() {
               <span className="text-xs text-muted-foreground">내보낼 범위</span>
               <RadioGroup value={exportScope} onValueChange={(v) => setExportScope(v as typeof exportScope)}>
                 <label htmlFor="export-scope-filtered" className="flex items-center gap-2 text-sm">
-                  <RadioGroupItem id="export-scope-filtered" value="filtered" /> 현재 필터 결과 내보내기(총 {filteredTotal}{" "}
-                  건)
+                  <RadioGroupItem id="export-scope-filtered" value="filtered" /> 현재 필터 결과 내보내기(총 {filteredTotal}건)
                 </label>
                 <label htmlFor="export-scope-all" className="flex items-center gap-2 text-sm">
                   <RadioGroupItem id="export-scope-all" value="all" /> 전체 내보내기
@@ -1236,7 +1235,7 @@ export default function FindingsPage() {
                   <RadioGroupItem id="export-format-md-single" value="md-single" /> Markdown 요약 보고서(.md 파일 하나)
                 </label>
                 <label htmlFor="export-format-md-zip" className="flex items-center gap-2 text-sm">
-                  <RadioGroupItem id="export-format-md-zip" value="md-zip" /> Markdown 파일별 분리(취약점당 .md 하나, .zip 압축)
+                  <RadioGroupItem id="export-format-md-zip" value="md-zip" /> Markdown 개별 파일(취약점마다 .md 하나씩, .zip 압축)
                 </label>
                 <label htmlFor="export-format-csv" className="flex items-center gap-2 text-sm">
                   <RadioGroupItem id="export-format-csv" value="csv" /> CSV 표(.csv)

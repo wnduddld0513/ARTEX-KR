@@ -56,7 +56,7 @@ export const RETRY_LAYERS = {
     where: "SDK · 200 응답을 받기 전",
     trigger:
       "연결되지 않거나 아직 200을 받지 못한 경우: 연결 리셋 / 읽기·쓰기 타임아웃 / DNS 실패 등 네트워크 계층 오류, 그리고 HTTP 408, 429, 500, 502, 503, 504.",
-    skips: "나머지 상태 코드(400 / 401 / 403 / 404 / 413 / 422 등)는 확정적 거부이므로 다시 보내도 실패합니다. 그대로 상위로 전달합니다.",
+    skips: "나머지 상태 코드(400 / 401 / 403 / 404 / 413 / 422 등)는 재시도해도 결과가 달라지지 않는 거부이므로 그대로 상위 계층으로 전달합니다.",
     desc: "같은 요청을 그대로 다시 보냅니다. 스트림이 시작된 뒤(200을 받은 뒤) 중간에 끊기면 이 계층이 처리하지 않습니다.",
     attemptsLabel: "재시도 횟수",
     defAttempts: 3,
@@ -69,48 +69,48 @@ export const RETRY_LAYERS = {
     trigger:
       "HTTP 200에 finish_reason이 정상 stop인데 응답 전체에 콘텐츠 블록이 하나도 없는 경우입니다. 게이트웨이 빈 프레임, 사고 필드 누락, 샘플링 오류가 모두 이렇게 나타납니다.",
     skips: "max_tokens로 잘려서 내용이 없는 경우는 해당하지 않습니다(그건 출력 상한을 올려야 해결되며, 재전송하면 같은 결과만 반복됩니다).",
-    desc: "전체 prompt를 다시 보내므로 컨텍스트가 길면 비용이 큽니다. 횟수는 크게 잡지 마세요.",
+    desc: "전체 프롬프트를 다시 보내므로 컨텍스트가 길면 비용이 큽니다. 횟수는 크게 잡지 마세요.",
     attemptsLabel: "재시도 횟수",
     defAttempts: 2,
     defInterval: "0.5s→1s→2s 지수(최대 8s)",
     offHint: "-1 = 빈 응답을 그대로 전달",
   },
   stream: {
-    title: "동일 provider 안전 구간 재시도",
-    where: "이 프로젝트 · 출력 전달 전",
+    title: "동일 제공자 안전 구간 재시도",
+    where: "ARTEX 자체 · 출력 전달 전",
     trigger:
-      "스트림이 열린 뒤(200 수신)에만 문제가 생긴 경우: 연결 중간 끊김, 공급자 overloaded, 스트림 내 429 / 5xx 오류 이벤트 — 그리고 아직 호출자에게 전달된 token이 하나도 없을 때.",
+      "스트림이 열린 뒤(200 수신)에만 문제가 생긴 경우: 연결 중간 끊김, 제공자 과부하, 스트림 내 429 / 5xx 오류 이벤트 — 그리고 아직 호출자에게 전달된 토큰이 하나도 없을 때.",
     skips:
-      "할당량 소진(402 / insufficient_quota, 폴링이 설정 교체 담당), 컨텍스트 초과(413 / context length, 압축 담당), 400 / 401 / 403 / 404 / 422 확정적 거부는 모두 재시도하지 않습니다.",
-    desc: "같은 설정에서 같은 요청을 재생합니다. 아직 출력을 전달하지 않았으므로 재생해도 모델 출력이나 도구 실행이 중복되지 않습니다.",
+      "할당량 소진(402 / insufficient_quota, 순환 호출이 설정 교체를 담당), 컨텍스트 초과(413 / context length, 압축 담당), 400 / 401 / 403 / 404 / 422처럼 재시도해도 달라지지 않는 거부는 모두 재시도하지 않습니다.",
+    desc: "같은 설정에서 같은 요청을 다시 보냅니다. 아직 출력을 전달하지 않았으므로 다시 보내도 모델 출력이나 도구 실행이 중복되지 않습니다.",
     attemptsLabel: "재시도 횟수",
     defAttempts: 2,
     defInterval: "0.5s→1s 지수(최대 4s)",
-    offHint: "-1 = 스트림 끊김 시 바로 상위 의도 재실행으로 전달",
+    offHint: "-1 = 스트림이 끊기면 바로 상위 탐색 계획 재실행으로 전달",
   },
   breaker: {
-    title: "폴링 차단",
-    where: "이 프로젝트 · 프로세스 단위, 전역 1개",
+    title: "순환 호출 차단",
+    where: "ARTEX 자체 · 프로세스 단위, 전역 1개",
     trigger:
-      "일시적 실패(429, 5xx, 네트워크 오류)가 연속으로 임계치에 도달하면 차단합니다. 잔액 부족(402), 키 만료(401 / 403), 모델 없음(404) 같은 확정적 실패는 임계치와 무관하게 첫 번째에 바로 차단합니다.",
+      "일시적 실패(429, 5xx, 네트워크 오류)가 연속으로 임계치에 도달하면 차단합니다. 잔액 부족(402), 키 만료(401 / 403), 모델 없음(404)처럼 재시도해도 달라지지 않는 실패는 임계치와 무관하게 첫 번째에 바로 차단합니다.",
     skips: "한 번 성공하면 카운트가 초기화되므로 간헐적으로 불안정한 설정이 누적되어 차단되는 일은 없습니다.",
-    desc: "차단되면 쿨다운에 들어가고, 쿨다운 동안 폴링은 이 설정을 건너뜁니다. 상태는 DB에 저장되어 재시작해도 유지됩니다.",
+    desc: "차단되면 쿨다운에 들어가고, 쿨다운 동안 순환 호출에서 이 설정을 건너뜁니다. 상태는 DB에 저장되어 재시작해도 유지됩니다.",
     attemptsLabel: "연속 실패 몇 회에 차단",
     defAttempts: 3,
     defInterval: "1min→5min→30min 단계",
-    offHint: "-1 = 일시적 실패는 절대 차단하지 않음(확정적 실패는 차단)",
+    offHint: "-1 = 일시적 실패는 절대 차단하지 않음(재시도해도 달라지지 않는 실패는 차단)",
   },
   intent: {
-    title: "의도 재실행",
-    where: "이 프로젝트 · 프로세스 단위, 전역 1개",
+    title: "탐색 계획 재실행",
+    where: "ARTEX 자체 · 프로세스 단위, 전역 1개",
     trigger:
-      "앞의 계층들이 모두 처리하지 못한 경우입니다: worker가 model_error로 끝난 상황 — 내부 재시도를 모두 소진했거나, 스트림이 출력을 전달하기 시작한 뒤 끊긴 경우(그때는 재생이 안전하지 않아 전체를 다시 실행해야 합니다).",
-    skips: "할당량 소진은 폴링이 설정을 교체해 처리하므로 여기서 다시 실행하지 않습니다. 태스크가 일시중지 / 종료 / 마무리 단계에 들어가면 즉시 자리를 비켜주며 백오프 시간을 차지하지 않습니다.",
-    desc: "의도 전체를 처음부터 다시 실행합니다. 가장 바깥 계층이므로 한 번 재실행하면 안쪽 계층들의 횟수가 다시 곱해집니다.",
+      "앞의 계층들이 모두 처리하지 못한 경우입니다. 실행 에이전트(worker)가 model_error로 끝난 상황, 즉 내부 재시도를 모두 소진했거나 스트림이 출력을 전달하기 시작한 뒤 끊긴 경우입니다(그때는 다시 보내는 것이 안전하지 않아 전체를 다시 실행해야 합니다).",
+    skips: "할당량 소진은 순환 호출이 설정을 교체해 처리하므로 여기서 다시 실행하지 않습니다. 작업이 일시중지 / 종료 / 마무리 단계에 들어가면 즉시 실행을 양보하고 백오프 시간을 차지하지 않습니다.",
+    desc: "탐색 계획 전체를 처음부터 다시 실행합니다. 가장 바깥 계층이므로 한 번 재실행하면 안쪽 계층들의 횟수가 다시 곱해집니다.",
     attemptsLabel: "재실행 횟수",
     defAttempts: 2,
     defInterval: "고정 3s",
-    offHint: "-1 = 재실행하지 않고 해당 의도를 바로 blocked 처리",
+    offHint: "-1 = 재실행하지 않고 해당 탐색 계획을 바로 실행 오류 상태로 처리",
   },
 } satisfies Record<string, LayerMeta>;
 
@@ -192,7 +192,7 @@ export function RetryRuleFields({
         </p>
         {!compact && meta.skips && (
           <p className="text-muted-foreground text-xs">
-            <span className="font-medium text-foreground">이 계층 사용 안 함</span>:{meta.skips}
+            <span className="font-medium text-foreground">이 계층을 타지 않는 오류</span>:{meta.skips}
           </p>
         )}
         {!compact && <p className="text-muted-foreground text-xs">{meta.desc}</p>}
@@ -224,7 +224,7 @@ export function RetryRuleFields({
           <span className="text-muted-foreground text-xs">{human ? `고정 ${human}` : meta.defInterval}</span>
         </div>
       </div>
-      {!compact && <p className="text-muted-foreground text-xs">비워두면 기본값 사용;{meta.offHint}.</p>}
+      {!compact && <p className="text-muted-foreground text-xs">비워두면 기본값을 사용합니다. {meta.offHint}</p>}
     </div>
   );
 }
@@ -242,7 +242,7 @@ export function ProfileRetryFields({
       <div className="grid gap-0.5">
         <Label className="text-sm">재시도 재정의</Label>
         <p className="text-muted-foreground text-xs">
-          이 설정에만 적용되며 '재시도와 백오프'의 전역 기본값을 덮어씁니다. 각 칸을 비우면 = 전역 설정을 따르고, 횟수에 -1 = 이 계층 재시도를 끄고, 간격을 채우면 고정 간격으로 지수 백오프를 대체합니다. 차단과 의도 재실행은 프로세스 단위라 전역 페이지에서만 조정할 수 있습니다.
+          이 설정에만 적용되며 '재시도와 백오프'의 전역 기본값을 덮어씁니다. 각 칸을 비우면 전역 설정을 따르고, 횟수에 -1을 넣으면 이 계층 재시도를 끄고, 간격을 채우면 고정 간격으로 지수 백오프를 대체합니다. 차단과 탐색 계획 재실행은 프로세스 단위라 전역 페이지에서만 조정할 수 있습니다.
         </p>
       </div>
       {(["connect", "empty", "stream"] as const).map((k) => (
@@ -311,9 +311,9 @@ export function RetryPolicyPanel() {
     <div className="grid gap-4">
       <div className="rounded-lg border bg-muted/30 p-3 text-muted-foreground text-xs leading-relaxed">
         모델 호출 실패는 안쪽에서 바깥쪽으로 다섯 계층의 재시도를 거칩니다:
-        <span className="text-foreground"> 연결 → 빈 응답 → 동일 provider 안전 구간 → 폴링 차단 → 의도 재실행</span>
-        . 안쪽을 모두 소진해야 바깥 계층으로 넘어가므로 횟수는
-        <span className="text-foreground">곱해집니다</span>
+        <span className="text-foreground"> 연결 → 빈 응답 → 동일 제공자 안전 구간 → 순환 호출 차단 → 탐색 계획 재실행</span>
+        . 안쪽을 모두 소진해야 바깥 계층으로 넘어가므로 횟수는{" "}
+        <span className="text-foreground">곱해집니다</span>{" "}
          — 각 계층을 모두 최대로 올리면 일시적 장애 한 번에 수십 건의 요청이 소모될 수 있습니다. 모두 비워두면 현재 기본값이 적용되며, 이 페이지가 없던 때와 동작이 완전히 같습니다. 앞의 세 계층은 각 모델 설정에서 개별적으로 재정의할 수 있습니다.
       </div>
 

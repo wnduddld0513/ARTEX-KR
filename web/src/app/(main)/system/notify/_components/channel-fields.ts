@@ -81,8 +81,8 @@ export const CHANNEL_FIELDS: Record<string, FieldDef[]> = {
       label: "요청 본문 템플릿",
       kind: "textarea",
       help:
-        "비워두면 내장 기본 템플릿을 사용합니다. 변수: {{.Title}} {{.Batch}} {{.Count}} {{.HomeURL}} {{.SentAt}}," +
-        "그리고 range .Items 아래의 .Name/.VulnClass/.Severity/.Summary/.Assets/.DetailURL/.StatusLabel." +
+        "비워두면 내장 기본 템플릿을 사용합니다. 변수: {{.Title}} {{.Batch}} {{.Count}} {{.HomeURL}} {{.SentAt}}, " +
+        "그리고 range .Items 안의 .Name/.VulnClass/.Severity/.Summary/.Assets/.DetailURL/.StatusLabel." +
         "문자열을 삽입할 때는 {{.Xxx}} 대신 {{json .Xxx}}를 사용하세요. 그렇지 않으면 제목의 따옴표가 JSON을 깨뜨립니다.",
     },
   ],
@@ -117,9 +117,9 @@ export const CHANNEL_FIELDS: Record<string, FieldDef[]> = {
 export const SEVERITY_OPTIONS = [
   { value: "", label: "제한 없음" },
   { value: "low", label: "낮음 이상" },
-  { value: "medium", label: "중간 이상" },
+  { value: "medium", label: "보통 이상" },
   { value: "high", label: "높음 이상" },
-  { value: "critical", label: "심각만" },
+  { value: "critical", label: "치명적만" },
 ];
 
 export type ChannelForm = {

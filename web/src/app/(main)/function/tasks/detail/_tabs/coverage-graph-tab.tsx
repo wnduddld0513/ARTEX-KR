@@ -220,7 +220,7 @@ function toG6Nodes(renderNodes: RenderNode[]): G6NodeDatum[] {
         fold: true,
         tested: false,
         inScope: false,
-        lbl: `남은 ${rn.hidden.length}개 ${kindMeta[rn.kind].label}`,
+        lbl: `${kindMeta[rn.kind].label} ${rn.hidden.length}개 더`,
         size: 24,
       };
     }
@@ -368,15 +368,15 @@ function AssetSheet({
                   <DetailRow label="제목">{node.page_title}</DetailRow>
                   <DetailRow label="상태 코드">{node.status_code ? node.status_code : undefined}</DetailRow>
                   <DetailRow label="앱">{node.app_name}</DetailRow>
-                  <DetailRow label="자산 ID">
+                  <DetailRow label="점검 대상 ID">
                     {node.asset_id ? <span className="font-mono text-xs">{node.asset_id}</span> : undefined}
                   </DetailRow>
                 </section>
                 {refs && (refs.intents.length > 0 || refs.facts.length > 0 || refs.findings.length > 0) && (
                   <section className="flex flex-col gap-3 border-t pt-3">
-                    <RefList title="관련 의도" items={refs.intents} />
+                    <RefList title="관련 탐색 계획" items={refs.intents} />
                     <RefList title="관련 사실" items={refs.facts} />
-                    <RefList title="관련 발견" items={refs.findings} />
+                    <RefList title="관련 취약점" items={refs.findings} />
                   </section>
                 )}
                 <section className="border-t pt-3">
@@ -654,7 +654,7 @@ function GraphInner({ taskId, coverageEnabled = true }: { taskId: string; covera
               )}
             </span>
           ) : (
-            <span className="text-muted-foreground">{loading ? "로드 중…" : "범위 내 자산 없음(먼저 작업 범위를 설정하세요)"}</span>
+            <span className="text-muted-foreground">{loading ? "불러오는 중…" : "범위 내 점검 대상 없음(먼저 테스트 범위를 설정하세요)"}</span>
           )}
           <Button variant="ghost" size="icon" className="size-6" onClick={fetchGraph} title="새로고침">
             <RefreshCw className={cn("size-3.5", loading && "animate-spin")} />
@@ -690,7 +690,7 @@ function GraphInner({ taskId, coverageEnabled = true }: { taskId: string; covera
           </span>
         </div>
         <p className="text-muted-foreground/80 border-border/60 border-t pt-2 leading-relaxed">
-          포스 레이아웃이며 노드를 드래그하고 휠로 확대/축소할 수 있습니다. 회색 '⋯'는 접힌 노드로, 클릭하면 더 펼칠 수 있습니다.
+          힘 기반으로 배치되며 노드를 끌어 옮기고 휠로 확대/축소할 수 있습니다. 회색 '⋯'는 접힌 노드로, 클릭하면 더 펼칠 수 있습니다.
         </p>
       </div>
 

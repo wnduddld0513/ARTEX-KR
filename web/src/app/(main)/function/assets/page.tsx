@@ -102,7 +102,7 @@ const TABS: { key: string; label: string; icon: LucideIcon }[] = [
   { key: "root_domain", label: "루트 도메인", icon: GlobeIcon },
   { key: "ip", label: "IP", icon: NetworkIcon },
   { key: "subdomain", label: "서브도메인", icon: GlobeIcon },
-  { key: "app", label: "애플리케이션", icon: SmartphoneIcon },
+  { key: "app", label: "앱", icon: SmartphoneIcon },
   { key: "service", label: "서비스", icon: LayoutTemplateIcon },
   { key: "endpoint", label: "엔드포인트", icon: LinkIcon },
 ];
@@ -192,7 +192,7 @@ export default function AssetsPage() {
     setDeleting(true);
     try {
       const res = await api.deleteAssets(deleteIds);
-      toast.success(`자산 ${res.deleted}건을 삭제했습니다`);
+      toast.success(`점검 대상 ${res.deleted}건을 삭제했습니다`);
       setSelected(new Set());
       refresh();
     } catch (e) {
@@ -210,7 +210,7 @@ export default function AssetsPage() {
       const res = await api.deleteCompany(companyDeleteTarget.id, companyDeleteAssets);
       const msg =
         companyDeleteAssets && res.assets_deleted > 0
-          ? `기업을 삭제하고 자산 ${res.assets_deleted}건도 함께 삭제했습니다`
+          ? `기업을 삭제하고 점검 대상 ${res.assets_deleted}건도 함께 삭제했습니다`
           : "기업을 삭제했습니다";
       toast.success(msg);
       refresh();
@@ -316,11 +316,11 @@ export default function AssetsPage() {
     <div className="flex h-[calc(100vh-6rem)] min-h-0 flex-col gap-4">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">자산</h1>
+          <h1 className="text-xl font-semibold tracking-tight">점검 대상</h1>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-muted-foreground">
-            총 <span className="tabular-nums">{totalAssets}</span>개 자산
+            총 <span className="tabular-nums">{totalAssets}</span>개 점검 대상
           </span>
           {selected.size > 0 && (
             <Button variant="destructive" size="sm" onClick={() => openDelete(Array.from(selected) as number[])}>
@@ -355,8 +355,8 @@ export default function AssetsPage() {
                 <TableHeader className="sticky top-0 z-10 bg-card">
                   <TableRow>
                     <TableHead>기업</TableHead>
-                    <TableHead className="w-24 text-right">자산 수</TableHead>
-                    <TableHead>자산 범위</TableHead>
+                    <TableHead className="w-24 text-right">점검 대상 수</TableHead>
+                    <TableHead>점검 대상</TableHead>
                     <TableHead className="w-36 text-right">작업</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -380,7 +380,7 @@ export default function AssetsPage() {
                             ))}
                           </div>
                         ) : (
-                          <span className="text-xs text-muted-foreground">범위 미설정</span>
+                          <span className="text-xs text-muted-foreground">점검 대상 미설정</span>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
@@ -406,7 +406,7 @@ export default function AssetsPage() {
                   {companies.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={4} className="py-10 text-center text-sm text-muted-foreground">
-                        아직 기업이 없습니다. 오른쪽 위의 "기업 추가"를 눌러 자산 범위를 입력하면 시스템이 일치하는 자산을 자동으로 귀속합니다.
+                        아직 기업이 없습니다. 오른쪽 위의 "기업 추가"를 눌러 점검 대상을 입력하면 시스템이 일치하는 항목을 해당 기업에 자동으로 연결합니다.
                       </TableCell>
                     </TableRow>
                   )}
@@ -439,7 +439,7 @@ export default function AssetsPage() {
                 <TableCell className="font-mono text-xs font-medium">{a.domain}</TableCell>
                 <TableCell className="text-xs">{a.icp || "—"}</TableCell>
                 <TableCell className="text-xs">
-                  {companyName(a.company_id) || <span className="text-muted-foreground">미귀속</span>}
+                  {companyName(a.company_id) || <span className="text-muted-foreground">소속 없음</span>}
                 </TableCell>
                 <TableCell className="w-8 pl-0">
                   <Button
@@ -447,7 +447,7 @@ export default function AssetsPage() {
                     size="icon"
                     className="size-7 text-muted-foreground hover:text-destructive"
                     onClick={() => openDelete([a.id])}
-                    aria-label={`자산 ${a.domain || a.id} 삭제`}
+                    aria-label={`점검 대상 ${a.domain || a.id} 삭제`}
                   >
                     <Trash2Icon className="size-3.5" />
                   </Button>
@@ -461,7 +461,7 @@ export default function AssetsPage() {
         <TabsContent value="ip" className="mt-0 flex min-h-0 flex-1 flex-col gap-2">
           {searchBox}
           <AssetCard
-            cols={["", "IP", "C 대역", "연결 도메인", "개방 포트", ""]}
+            cols={["", "IP", "C 대역", "연결 도메인", "열린 포트", ""]}
             loaded={loaded}
             total={total}
             page={page}
@@ -494,7 +494,7 @@ export default function AssetsPage() {
                     size="icon"
                     className="size-7 text-muted-foreground hover:text-destructive"
                     onClick={() => openDelete([a.id])}
-                    aria-label={`자산 ${a.ip || a.id} 삭제`}
+                    aria-label={`점검 대상 ${a.ip || a.id} 삭제`}
                   >
                     <Trash2Icon className="size-3.5" />
                   </Button>
@@ -536,7 +536,7 @@ export default function AssetsPage() {
                     size="icon"
                     className="size-7 text-muted-foreground hover:text-destructive"
                     onClick={() => openDelete([a.id])}
-                    aria-label={`자산 ${a.domain || a.id} 삭제`}
+                    aria-label={`점검 대상 ${a.domain || a.id} 삭제`}
                   >
                     <Trash2Icon className="size-3.5" />
                   </Button>
@@ -576,7 +576,7 @@ export default function AssetsPage() {
                     size="icon"
                     className="size-7 text-muted-foreground hover:text-destructive"
                     onClick={() => openDelete([a.id])}
-                    aria-label={`자산 ${a.app_name || a.id} 삭제`}
+                    aria-label={`점검 대상 ${a.app_name || a.id} 삭제`}
                   >
                     <Trash2Icon className="size-3.5" />
                   </Button>
@@ -671,7 +671,7 @@ export default function AssetsPage() {
                       size="icon"
                       className="size-7 text-muted-foreground hover:text-destructive"
                       onClick={() => openDelete([a.id])}
-                      aria-label={`자산 ${a.url || a.id} 삭제`}
+                      aria-label={`점검 대상 ${a.url || a.id} 삭제`}
                     >
                       <Trash2Icon className="size-3.5" />
                     </Button>
@@ -723,7 +723,7 @@ export default function AssetsPage() {
                     size="icon"
                     className="size-7 text-muted-foreground hover:text-destructive"
                     onClick={() => openDelete([a.id])}
-                    aria-label={`자산 ${a.url || a.id} 삭제`}
+                    aria-label={`점검 대상 ${a.url || a.id} 삭제`}
                   >
                     <Trash2Icon className="size-3.5" />
                   </Button>
@@ -739,8 +739,7 @@ export default function AssetsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>삭제 확인</AlertDialogTitle>
             <AlertDialogDescription>
-              자산 기록 <span className="font-semibold tabular-nums">{deleteIds.length}</span>{" "}
-              건을 영구적으로 삭제합니다. 이 작업은 되돌릴 수 없습니다.
+              점검 대상 기록 <span className="font-semibold tabular-nums">{deleteIds.length}</span>건을 영구적으로 삭제합니다. 이 작업은 되돌릴 수 없습니다.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -773,7 +772,7 @@ export default function AssetsPage() {
             <AlertDialogTitle>기업 삭제 · {companyDeleteTarget?.name}</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-3">
-                <p>이 작업은 해당 기업과 자산 범위 설정을 영구적으로 삭제하며 되돌릴 수 없습니다.</p>
+                <p>이 작업은 해당 기업과 점검 대상 설정을 영구적으로 삭제하며 되돌릴 수 없습니다.</p>
                 <label
                   htmlFor="delete-assets-opt"
                   className="flex cursor-pointer items-center gap-2.5 rounded-md border p-3 hover:bg-muted/50"
@@ -784,8 +783,8 @@ export default function AssetsPage() {
                     onCheckedChange={(v) => setCompanyDeleteAssets(!!v)}
                   />
                   <span className="text-sm leading-snug">
-                    이 기업의 모든 자산도 함께 삭제
-                    <span className="block text-xs text-muted-foreground">선택하지 않으면 자산은 유지되고 귀속 관계만 해제됩니다</span>
+                    이 기업의 모든 점검 대상도 함께 삭제
+                    <span className="block text-xs text-muted-foreground">선택하지 않으면 점검 대상은 유지되고 소속만 해제됩니다</span>
                   </span>
                 </label>
               </div>
@@ -887,7 +886,7 @@ function AssetCard({
               <SelectGroup>
                 {PAGE_SIZES.map((n) => (
                   <SelectItem key={n} value={String(n)}>
-                    {n} / 페이지
+                    페이지당 {n}개
                   </SelectItem>
                 ))}
               </SelectGroup>
@@ -952,7 +951,7 @@ function CompanyAvatar({ name, logo }: { name: string; logo?: string }) {
 }
 
 // 백엔드가 돌려주는 warnings는 기존 데이터 문제를 뜻하며(이번에 제출한 행의 오류가 아님), 저장 자체는 이미
-// 성공한 상태입니다. 사용자가 구체적인 자산을 처리해야 하므로 제목만 훑고 넘기기 어려워 더 길게 표시합니다.
+// 성공한 상태입니다. 사용자가 구체적인 점검 대상을 처리해야 하므로 제목만 훑고 넘기기 어려워 더 길게 표시합니다.
 function showScopeWarnings(warnings?: string[]) {
   for (const warning of warnings ?? []) {
     toast.warning(warning, { duration: 15000 });
@@ -991,7 +990,7 @@ function CompanyDialog({ onSaved }: { onSaved: () => void }) {
       return;
     }
     if (parsedScope.errors.length > 0) {
-      toast.error("잘못된 자산 범위를 수정하세요");
+      toast.error("잘못된 점검 대상 항목을 수정하세요");
       return;
     }
     setBusy(true);
@@ -999,8 +998,8 @@ function CompanyDialog({ onSaved }: { onSaved: () => void }) {
       const res = await api.createCompany(name.trim(), parsedScope.rules);
       const added = res.scope_added ?? 0;
       const invalid = res.scope_invalid ?? 0;
-      if (invalid > 0) toast.warning(`기업을 만들고 범위 ${added}건을 추가했습니다. ${invalid}개 행이 유효하지 않습니다`);
-      else toast.success(`기업을 만들고 범위 ${added}건을 추가했습니다`);
+      if (invalid > 0) toast.warning(`기업을 만들고 점검 대상 ${added}건을 추가했습니다. ${invalid}개 행이 유효하지 않습니다`);
+      else toast.success(`기업을 만들고 점검 대상 ${added}건을 추가했습니다`);
       setOpen(false);
       onSaved();
     } catch (e) {
@@ -1022,7 +1021,7 @@ function CompanyDialog({ onSaved }: { onSaved: () => void }) {
       <SheetContent className="w-full! max-w-none! gap-0 p-0 sm:w-[520px]! sm:max-w-[520px]!">
         <SheetHeader className="border-b p-6">
           <SheetTitle>기업 추가</SheetTitle>
-          <SheetDescription>기업과 자산 범위를 설정합니다. 키워드는 에이전트 힌트로만 사용되며 자산을 자동으로 귀속하지 않습니다.</SheetDescription>
+          <SheetDescription>기업과 점검 대상을 설정합니다. 키워드는 에이전트 힌트로만 사용되며 점검 대상을 자동으로 연결하지 않습니다.</SheetDescription>
         </SheetHeader>
         <div className="flex-1 overflow-y-auto p-6">
           <FieldGroup>
@@ -1051,7 +1050,7 @@ function CompanyDialog({ onSaved }: { onSaved: () => void }) {
   );
 }
 
-// 자산 범위 편집(덮어쓰기) 대화상자
+// 점검 대상 편집(덮어쓰기) 대화상자
 function EditScopeDialog({ company, onSaved }: { company: Company; onSaved: () => void }) {
   const [open, setOpen] = React.useState(false);
   const [scopeText, setScopeText] = React.useState("");
@@ -1071,7 +1070,7 @@ function EditScopeDialog({ company, onSaved }: { company: Company; onSaved: () =
 
   const submit = async () => {
     if (parsedScope.errors.length > 0) {
-      toast.error("잘못된 자산 범위를 수정하세요");
+      toast.error("잘못된 점검 대상 항목을 수정하세요");
       return;
     }
     setBusy(true);
@@ -1079,7 +1078,7 @@ function EditScopeDialog({ company, onSaved }: { company: Company; onSaved: () =
       const res = await api.updateCompanyScope(company.id, parsedScope.rules, reason);
       const errCount = res.invalid ?? 0;
       if (errCount > 0) toast.warning(`저장했습니다. ${errCount}개 행이 유효하지 않습니다`);
-      else toast.success(`범위를 갱신했습니다. 총 ${res.added}건`);
+      else toast.success(`점검 대상을 갱신했습니다. 총 ${res.added}건`);
       showScopeWarnings(res.warnings);
       setOpen(false);
       onSaved();
@@ -1099,20 +1098,21 @@ function EditScopeDialog({ company, onSaved }: { company: Company; onSaved: () =
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>자산 범위 편집 · {company.name}</DialogTitle>
+          <DialogTitle>점검 대상 편집 · {company.name}</DialogTitle>
           <DialogDescription>
-            편집하면 기존 범위가 모두 대체됩니다. ICP는 자산과 정확히 일치하며 기업 키워드는 에이전트 힌트로만 사용됩니다.
+            편집하면 기존 점검 대상이 모두 대체됩니다. ICP는 점검 대상과 정확히 일치하며 기업 키워드는 에이전트 힌트로만 사용됩니다.
           </DialogDescription>
         </DialogHeader>
         <FieldGroup className="py-2">
           <ScopeTextEditor
             id={`edit-company-scope-${company.id}`}
+            label="점검 대상"
             value={scopeText}
             onValueChange={setScopeText}
             parsed={parsedScope}
           />
           <Field>
-            <FieldLabel htmlFor="es-reason">귀속 근거(선택)</FieldLabel>
+            <FieldLabel htmlFor="es-reason">소속 판단 근거(선택)</FieldLabel>
             <Input
               id="es-reason"
               placeholder="예: 인증서 / whois / ASN 근거"
@@ -1134,7 +1134,7 @@ function EditScopeDialog({ company, onSaved }: { company: Company; onSaved: () =
   );
 }
 
-// 자산 범위 추가 대화상자
+// 점검 대상 추가 대화상자
 function AppendScopeDialog({ company, onSaved }: { company: Company; onSaved: () => void }) {
   const [open, setOpen] = React.useState(false);
   const [scopeText, setScopeText] = React.useState("");
@@ -1150,11 +1150,11 @@ function AppendScopeDialog({ company, onSaved }: { company: Company; onSaved: ()
 
   const submit = async () => {
     if (parsedScope.rules.length === 0) {
-      toast.error("추가할 범위를 입력하세요");
+      toast.error("추가할 점검 대상을 입력하세요");
       return;
     }
     if (parsedScope.errors.length > 0) {
-      toast.error("잘못된 자산 범위를 수정하세요");
+      toast.error("잘못된 점검 대상 항목을 수정하세요");
       return;
     }
     setBusy(true);
@@ -1162,7 +1162,7 @@ function AppendScopeDialog({ company, onSaved }: { company: Company; onSaved: ()
       const res = await api.addCompanyScope(company.id, parsedScope.rules, reason);
       const errCount = res.invalid ?? 0;
       if (errCount > 0) toast.warning(`저장했습니다. ${errCount}개 행이 유효하지 않습니다`);
-      else toast.success(`범위 ${res.added}건을 추가했습니다`);
+      else toast.success(`점검 대상 ${res.added}건을 추가했습니다`);
       showScopeWarnings(res.warnings);
       setOpen(false);
       onSaved();
@@ -1182,18 +1182,19 @@ function AppendScopeDialog({ company, onSaved }: { company: Company; onSaved: ()
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>자산 범위 추가 · {company.name}</DialogTitle>
-          <DialogDescription>새 범위는 기존 범위에 추가됩니다. ICP는 자산과 정확히 일치하며 기업 키워드는 에이전트 힌트로만 사용됩니다.</DialogDescription>
+          <DialogTitle>점검 대상 추가 · {company.name}</DialogTitle>
+          <DialogDescription>새 점검 대상은 기존 목록에 추가됩니다. ICP는 점검 대상과 정확히 일치하며 기업 키워드는 에이전트 힌트로만 사용됩니다.</DialogDescription>
         </DialogHeader>
         <FieldGroup className="py-2">
           <ScopeTextEditor
             id={`append-company-scope-${company.id}`}
+            label="점검 대상"
             value={scopeText}
             onValueChange={setScopeText}
             parsed={parsedScope}
           />
           <Field>
-            <FieldLabel htmlFor="as-reason">귀속 근거(선택)</FieldLabel>
+            <FieldLabel htmlFor="as-reason">소속 판단 근거(선택)</FieldLabel>
             <Input
               id="as-reason"
               placeholder="예: 인증서 / whois / ASN 근거"

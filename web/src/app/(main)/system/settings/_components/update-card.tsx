@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { api, sseUrl } from "@/lib/api";
+import { localizeBackendError } from "@/lib/backend-errors";
 import type { UpdateCheck, UpdateProgress } from "@/lib/types";
 
 /** 等待新版本上线的最长时间。一次升级要经过三次进程启动（暂存 → 换装 → 新版），
@@ -54,7 +55,7 @@ export function UpdateCard() {
       .then((r) => {
         setInfo(r);
         if (!quiet) {
-          if (r.error) toast.error("업데이트 확인 실패: " + r.error);
+          if (r.error) toast.error("업데이트 확인 실패: " + localizeBackendError(r.error));
           else if (r.has_update) toast.success(`새 버전 발견: ${r.latest}`);
           else if (r.comparable) toast.success("현재 최신 버전입니다");
         }
@@ -108,11 +109,17 @@ export function UpdateCard() {
         } catch {
           return;
         }
-        setProgress(p);
+        // 서버가 보내는 진행/오류 문구는 중국어 원문이므로 화면에 쓰기 전에 번역한다.
+        const localized = {
+          ...p,
+          message: p.message ? localizeBackendError(p.message) : p.message,
+          error: p.error ? localizeBackendError(p.error) : p.error,
+        };
+        setProgress(localized);
         if (p.phase === "failed") {
           es.close();
           setBusy(false);
-          toast.error("업데이트 실패: " + (p.error || p.message));
+          toast.error("업데이트 실패: " + (localized.error || localized.message));
           return;
         }
         if (p.phase === "staged") {
@@ -137,7 +144,7 @@ export function UpdateCard() {
       `다음 버전으로 업데이트할까요: ${info.latest}?
 
 ` +
-        "업데이트하면 프로그램이 재시작되고 실행 중인 태스크가 중단됩니다." +
+        "업데이트하면 프로그램이 재시작되고 실행 중인 작업이 중단됩니다." +
         (info.mode === "docker"
           ? "참고: 컨테이너 내 업데이트는 프로그램 본체만 교체하며 이미지 안의 playwright / nmap 등 도구 체인은 업데이트하지 않습니다." +
             "새 버전이 새 도구에 의존한다면 docker compose pull로 전환하세요."
@@ -160,7 +167,7 @@ export function UpdateCard() {
     if (!info) return;
     if (
       !window.confirm(
-        "이전 버전으로 롤백할까요?\n\n프로그램이 재시작되고 실행 중인 태스크가 중단됩니다.\n참고: 데이터베이스 스키마는 되돌아가지 않으므로 이전 버전이 새 버전에서 기록한 데이터를 인식하지 못할 수 있습니다.",
+        "이전 버전으로 롤백할까요?\n\n프로그램이 재시작되고 실행 중인 작업이 중단됩니다.\n참고: 데이터베이스 스키마는 되돌아가지 않으므로 이전 버전이 새 버전에서 기록한 데이터를 인식하지 못할 수 있습니다.",
       )
     )
       return;
@@ -193,7 +200,7 @@ export function UpdateCard() {
           <DownloadIcon className="size-4" />
           버전과 업데이트
         </CardTitle>
-        <CardDescription>GitHub에서 새 버전을 확인하고 설치합니다. 업데이트하면 프로그램이 재시작되고 실행 중인 태스크가 중단됩니다.</CardDescription>
+        <CardDescription>GitHub에서 새 버전을 확인하고 설치합니다. 업데이트하면 프로그램이 재시작되고 실행 중인 작업이 중단됩니다.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -232,19 +239,19 @@ export function UpdateCard() {
         {info?.boot_notice && (
           <p className="flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-2 text-xs text-amber-700 dark:text-amber-400">
             <TriangleAlertIcon className="mt-0.5 size-3.5 shrink-0" />
-            {info.boot_notice}
+            {localizeBackendError(info.boot_notice)}
           </p>
         )}
 
         {info?.error && (
           <p className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-2 text-xs text-destructive">
             <TriangleAlertIcon className="mt-0.5 size-3.5 shrink-0" />
-            GitHub에 연결할 수 없습니다: {info.error}
+            GitHub에 연결할 수 없습니다: {localizeBackendError(info.error)}{" "}
             위에서 전역 프록시를 설정한 뒤 다시 시도할 수 있습니다.
           </p>
         )}
 
-        {info && !info.comparable && info.reason && <p className="text-xs text-muted-foreground">{info.reason}</p>}
+        {info && !info.comparable && info.reason && <p className="text-xs text-muted-foreground">{localizeBackendError(info.reason)}</p>}
 
         {info?.has_update && info.asset_available === false && (
           <p className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-2 text-xs text-destructive">

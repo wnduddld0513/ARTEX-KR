@@ -21,7 +21,7 @@ export function ScopeTextEditor({
   value,
   onValueChange,
   parsed,
-  label = "자산 범위",
+  label = "점검 대상 범위",
   description = "한 줄에 하나씩 입력하면 도메인, IP, CIDR, ICP 등록번호, 기업 키워드를 자동으로 인식합니다.",
 }: {
   id: string;

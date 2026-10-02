@@ -28,7 +28,7 @@ import { api } from "@/lib/api";
 import type { FindingTraffic, FindingTrafficBinding, TrafficEvidenceRole } from "@/lib/types";
 
 const ROLES: Record<TrafficEvidenceRole, string> = {
-  baseline: "정상 대조",
+  baseline: "기준 트래픽",
   proof: "취약점 증명",
   verification: "추가 검증",
   supporting: "보조 증거",
@@ -128,7 +128,7 @@ export function FindingTrafficPanel({
             <Empty>
               <EmptyHeader>
                 <EmptyTitle>연결된 트래픽 없음</EmptyTitle>
-                <EmptyDescription>정상 대조, 취약점 증명, 추가 검증 요청을 연결할 수 있습니다.</EmptyDescription>
+                <EmptyDescription>기준 트래픽, 취약점 증명, 추가 검증 요청을 연결할 수 있습니다.</EmptyDescription>
               </EmptyHeader>
             </Empty>
           ) : (

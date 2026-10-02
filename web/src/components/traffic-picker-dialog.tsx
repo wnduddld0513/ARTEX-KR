@@ -119,7 +119,7 @@ export function TrafficPickerDialog({
           </DialogHeader>
           <FieldGroup className="flex flex-col gap-3 sm:flex-row">
             <Field>
-              <FieldLabel htmlFor="evidence-host">대상 host</FieldLabel>
+              <FieldLabel htmlFor="evidence-host">대상 호스트</FieldLabel>
               <Input
                 id="evidence-host"
                 value={host}

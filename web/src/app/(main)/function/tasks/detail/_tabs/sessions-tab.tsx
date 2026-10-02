@@ -234,9 +234,9 @@ function fmtDuration(ms: number): string {
 }
 
 const roleMeta = {
-  mainagent: { label: "메인 Agent", icon: UserIcon },
-  planner: { label: "플래너", icon: BrainIcon },
-  worker: { label: "Workers", icon: RadioIcon },
+  mainagent: { label: "메인 에이전트", icon: UserIcon },
+  planner: { label: "계획 에이전트", icon: BrainIcon },
+  worker: { label: "워커", icon: RadioIcon },
   system: { label: "시스템 감사", icon: HistoryIcon },
 } as const;
 
@@ -249,7 +249,7 @@ const roleMeta = {
 // segment is a switchable UI session; only the current (highest) one is writable.
 const mainSessionId = (seg: number) => `s-main-${seg}`;
 const mainSessionKey = (seg: number) => `main:${seg}`;
-const mainSessionTitle = (seg: number) => `메인 Agent · 세션 #${seg + 1}`;
+const mainSessionTitle = (seg: number) => `메인 에이전트 · 세션 #${seg + 1}`;
 const MAIN_ID = mainSessionId(0);
 const MAIN_SESSION: Session = {
   id: MAIN_ID,
@@ -269,7 +269,7 @@ const PLANNER_ID = "s-planner";
 const PLANNER_SESSION: Session = {
   id: PLANNER_ID,
   role: "planner",
-  title: "플래너 · 상황 분석",
+  title: "계획 에이전트 · 상황 분석",
   status: "running",
   live: true,
   last_activity: "",
@@ -282,7 +282,7 @@ const SYSTEM_ID = "s-system";
 const SYSTEM_SESSION: Session = {
   id: SYSTEM_ID,
   role: "system",
-  title: "시스템 이벤트 · LLM 페일오버",
+  title: "시스템 이벤트 · LLM 대체 구성 전환",
   status: "done",
   live: false,
   last_activity: "",
@@ -425,8 +425,8 @@ function SessionItem({
             size="icon-xs"
             onClick={onCancel}
             disabled={controlling}
-            title="이 의도 삭제(사유 필수, 소프트/하드 삭제 선택 가능)"
-            aria-label="이 의도 삭제(사유 필수, 소프트/하드 삭제 선택 가능)"
+            title="이 탐색 계획 삭제(사유 필수, 소프트/하드 삭제 선택 가능)"
+            aria-label="이 탐색 계획 삭제(사유 필수, 소프트/하드 삭제 선택 가능)"
             className="text-destructive hover:text-destructive"
           >
             <Trash2Icon />
@@ -456,7 +456,7 @@ function WorkerAssetBadge({ assets }: { assets: IntentAsset[] }) {
     <Tooltip>
       <TooltipTrigger asChild>
         <Badge variant="outline" className="max-w-60 shrink-0 font-normal" title={firstRawLabel}>
-          <span className="truncate">현재 자산: {firstLabel}</span>
+          <span className="truncate">현재 점검 대상: {firstLabel}</span>
           {displayAssets.length > 1 && <span className="shrink-0 tabular-nums">+{displayAssets.length - 1}</span>}
         </Badge>
       </TooltipTrigger>
@@ -495,7 +495,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
         id,
         role: "worker",
         intent_id: id,
-        title: `Worker #${id}`,
+        title: `워커 #${id}`,
         status: "done",
         live: false,
         last_activity: source.items[0]?.ts ?? "",
@@ -604,25 +604,25 @@ export function SessionsTab({ taskId }: { taskId: string }) {
         const res = await api.controlIntent(taskId, session.intent_id, action, reason, mode);
         if (action === "pause") {
           patchIntentState(session.intent_id, "paused");
-          toast.success(`Worker #${session.intent_id} 일시정지됨`);
+          toast.success(`워커 #${session.intent_id} 일시정지됨`);
         } else if (action === "resume") {
           patchIntentState(session.intent_id, "open");
-          toast.success(`Worker #${session.intent_id} 재개됨, 재할당 대기 중`);
+          toast.success(`워커 #${session.intent_id} 재개됨, 재할당 대기 중`);
         } else if (mode === "hard") {
           // 真删除:意图及独占下游已物理移除,从列表剔除该行。
           patchIntentState(session.intent_id);
           const d = res.deleted;
-          const extra = d ? `(포함: ${d.intents} 의도 / ${d.facts} 사실 / ${d.findings} 취약점)` : "";
-          toast.success(`Worker #${session.intent_id} 및 전용 다운스트림이 완전히 삭제되었습니다${extra}`);
+          const extra = d ? `(탐색 계획 ${d.intents}개 · 사실 ${d.facts}개 · 취약점 ${d.findings}개 포함)` : "";
+          toast.success(`워커 #${session.intent_id}과 그 계획에만 속한 하위 노드까지 모두 삭제했습니다${extra}`);
           setCancelReason("");
         } else {
           // 假删除:意图置 deleted、记录删除原因,保留节点与产出。
           patchIntentState(session.intent_id, "deleted");
-          toast.success(`Worker #${session.intent_id} 이(가) 삭제되었습니다(사유가 기록되었으며 플래너가 이를 반영해 다시 계획합니다)`);
+          toast.success(`워커 #${session.intent_id}을(를) 삭제했습니다(사유가 기록되었고 계획 에이전트가 이를 반영해 다시 계획을 세웁니다)`);
           setCancelReason("");
         }
       } catch (error) {
-        toast.error(`Worker 작업 실패: ${(error as Error).message}`);
+        toast.error(`워커 처리 실패: ${(error as Error).message}`);
       } finally {
         setControllingIntent(null);
         setCancelIntent(null);
@@ -710,7 +710,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
             patchStore(key, (s) => ({
               ...s,
               loading: false,
-              error: (error as Error).message || "로드 실패",
+              error: (error as Error).message || "불러오기 실패",
             }));
           })
           .finally(() => loadingKeysRef.current.delete(key));
@@ -738,7 +738,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
         })
         .catch((e) => {
           if (reqTokenRef.current[key] !== token) return;
-          patchStore(key, (s) => ({ ...s, loading: false, error: (e as Error).message || "로드 실패" }));
+          patchStore(key, (s) => ({ ...s, loading: false, error: (e as Error).message || "불러오기 실패" }));
         })
         .finally(() => loadingKeysRef.current.delete(key));
     },
@@ -1036,7 +1036,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
       .catch((err) => {
         if (!alive || reqTokenRef.current.mainboot !== token) return;
         if ((err as Error).message === "superseded") return;
-        patchStore(bootKey, (s) => ({ ...s, loading: false, error: (err as Error).message || "로드 실패" }));
+        patchStore(bootKey, (s) => ({ ...s, loading: false, error: (err as Error).message || "불러오기 실패" }));
       })
       .finally(() => loadingKeysRef.current.delete(bootKey));
 
@@ -1538,7 +1538,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
         patchIntentState(intentId, result.state);
         setWorkerMessage("");
         setWorkerMessageRequestId("");
-        toast.success(`Worker #${intentId}에 메시지를 보냈고 즉시 실행을 재개했습니다`);
+        toast.success(`워커 #${intentId}에 메시지를 보냈고 즉시 실행을 재개했습니다`);
       })
       .catch((error) => {
         toast.error(`전송 실패: ${(error as Error).message || "잠시 후 다시 시도하세요"}`);
@@ -1666,8 +1666,8 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                           type="button"
                           onClick={() => setConfirmNewMain(true)}
                           disabled={creatingMain}
-                          title="새 메인 Agent 세션(컨텍스트를 비우고 작업 상태는 유지)"
-                          aria-label="새 메인 Agent 세션"
+                          title="새 메인 에이전트 세션(컨텍스트를 비우고 작업 상태는 유지)"
+                          aria-label="새 메인 에이전트 세션"
                           className="ml-auto flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-muted-foreground hover:bg-accent/60 hover:text-foreground disabled:opacity-50"
                         >
                           {creatingMain ? (
@@ -1716,14 +1716,14 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                         ) : (
                           <RotateCwIcon className="size-3.5" />
                         )}
-                        이전 Worker 불러오기
+                        이전 워커 불러오기
                       </button>
                     )}
                   </div>
                 );
               })}
               {mainLoaded && !workerSessions.length && (
-                <div className="px-2 py-1 text-xs text-muted-foreground">실행 중인 Worker 세션이 없습니다.</div>
+                <div className="px-2 py-1 text-xs text-muted-foreground">실행 중인 워커 세션이 없습니다.</div>
               )}
             </div>
           </ScrollArea>
@@ -1732,7 +1732,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
         {/* Right: transcript */}
         <SideQuestionWorkspace
           side={side}
-          label={active.role === "worker" ? `Worker #${active.intent_id} · ${activeDisplayTitle}` : activeDisplayTitle}
+          label={active.role === "worker" ? `워커 #${active.intent_id} · ${activeDisplayTitle}` : activeDisplayTitle}
         >
           <div className="flex min-h-0 flex-1 min-w-0 flex-col overflow-hidden rounded-lg border bg-card">
             <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 border-b px-3 py-2 sm:px-4 sm:py-2.5">
@@ -1741,7 +1741,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                 const meta = isWorker ? sessionMeta.get(active.id) : undefined;
                 // Worker: the intent moved into the transcript as a message, so the
                 // header shows a stable generic label (intent JSON stays on hover).
-                const title = isWorker ? "Worker 실행 세션" : active.title;
+                const title = isWorker ? "워커 실행 세션" : active.title;
                 const titleEl = <span className="min-w-0 truncate text-sm font-medium">{title}</span>;
                 return meta?.json ? (
                   <Tooltip>
@@ -1838,9 +1838,9 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                 <div className="flex items-start gap-2 border-b border-destructive/30 bg-destructive/5 px-4 py-2.5 text-xs">
                   <Trash2Icon className="mt-0.5 size-3.5 shrink-0 text-destructive" />
                   <div className="min-w-0">
-                    <span className="font-medium text-destructive">이 의도는 사용자에 의해 삭제되었습니다</span>
+                    <span className="font-medium text-destructive">이 탐색 계획은 사용자가 삭제했습니다</span>
                     <span className="text-muted-foreground">
-                      (실행이 중지되었고 플래너에 알림이 전송되었습니다. 의도와 산출물은 유지되며 아래에서 기록을 볼 수 있습니다)
+                      (실행이 중지되었고 계획 에이전트에 알림이 전송되었습니다. 탐색 계획과 산출물은 유지되며 아래에서 기록을 볼 수 있습니다)
                     </span>
                     {dm.deleteReason && (
                       <p className="mt-1 break-words text-foreground">
@@ -1882,7 +1882,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                 ) : activeState?.error ? (
                   <div className="flex items-center gap-2 pl-9 text-xs text-red-500">
                     <CircleXIcon className="size-3.5" />
-                    로드 실패: {activeState.error}
+                    불러오지 못했습니다: {activeState.error}
                     <Button
                       size="sm"
                       variant="ghost"
@@ -1902,7 +1902,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                   />
                 ) : (
                   <div className="pl-9 text-xs text-muted-foreground">
-                    {isMain ? "아직 대화가 없습니다. 아래에서 메인 Agent에게 메시지를 보내 탐색 방향을 안내하거나 흐름에 개입하세요." : "활동 기록이 없습니다."}
+                    {isMain ? "아직 대화가 없습니다. 아래에서 메인 에이전트에게 메시지를 보내 탐색 방향을 안내하거나 흐름에 개입하세요." : "활동 기록이 없습니다."}
                   </div>
                 )}
               </div>
@@ -1943,9 +1943,9 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                   <MentionTextarea
                     inputGroup
                     rows={1}
-                    aria-label="메인 Agent에게 메시지 보내기"
+                    aria-label="메인 에이전트에게 메시지 보내기"
                     placeholder={
-                      mainBusy ? "메인 Agent가 실행 중입니다. /btw로 질문할 수 있습니다…" : "메인 Agent에게 메시지 보내기, @로 취약점·자산 등 참조…"
+                      mainBusy ? "메인 에이전트가 실행 중입니다. /btw로 질문할 수 있습니다…" : "메인 에이전트에게 메시지 보내기, @로 취약점·점검 대상 등 참조…"
                     }
                     value={input}
                     disabled={sending}
@@ -2009,8 +2009,8 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                   <MentionTextarea
                     inputGroup
                     rows={1}
-                    aria-label={`Worker #${active.intent_id}에게 메시지 보내기`}
-                    placeholder={`Worker #${active.intent_id}에게 메시지 보내기, @로 기록 참조, 실행 방향 조정…`}
+                    aria-label={`워커 #${active.intent_id}에게 메시지 보내기`}
+                    placeholder={`워커 #${active.intent_id}에게 메시지 보내기, @로 기록 참조, 실행 방향 조정…`}
                     value={workerMessage}
                     onValueChange={(value) => {
                       setWorkerMessage(value);
@@ -2046,8 +2046,8 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                         variant="destructive"
                         onClick={() => void controlWorker(active, "pause")}
                         disabled={controllingIntent === active.intent_id}
-                        title="현재 Worker 일시정지"
-                        aria-label="현재 Worker 일시정지"
+                        title="현재 워커 일시정지"
+                        aria-label="현재 워커 일시정지"
                       >
                         {controllingIntent === active.intent_id ? (
                           <Loader2Icon className="animate-spin" />
@@ -2117,13 +2117,13 @@ export function SessionsTab({ taskId }: { taskId: string }) {
               <AlertDialogDescription className="break-words whitespace-normal">
                 {deleteMode === "hard" ? (
                   <>
-                    <strong>하드 삭제</strong>는 해당 의도를 물리적으로 제거하며, <strong>이 의도만으로 지지되는</strong>
-                     다운스트림 노드까지 연쇄 제거합니다(리프까지 연쇄 처리하여 고아 데이터를 방지). 공유 노드, 목표, 작업 루트 사실은 유지됩니다.
-                    <strong>이 작업은 되돌릴 수 없습니다.</strong> 플래너는 삭제 알림을 받고 이를 반영해 다시 계획합니다.
+                    <strong>하드 삭제</strong>는 해당 탐색 계획을 그래프에서 완전히 제거하며, <strong>이 탐색 계획만으로 연결된</strong>
+                     하위 노드까지 연쇄 제거합니다(리프까지 함께 지워 고립된 데이터가 남지 않게 합니다). 공유 노드, 목표, 작업 루트 사실은 유지됩니다.
+                    <strong>이 작업은 되돌릴 수 없습니다.</strong> 계획 에이전트는 삭제 알림을 받고 이를 반영해 다시 계획을 세웁니다.
                   </>
                 ) : (
                   <>
-                    <strong>소프트 삭제</strong>는 해당 의도를 '삭제됨' 상태로 바꾸고 삭제 사유를 기록합니다. 의도 노드, 실행 기록, 등록된 사실과 취약점은 <strong>모두 유지됩니다</strong>. 플래너는 '사용자가 의도를 삭제함 + 사유' 알림을 받고 이를 반영해 다시 계획합니다.
+                    <strong>소프트 삭제</strong>는 해당 탐색 계획을 '삭제됨' 상태로 바꾸고 삭제 사유를 기록합니다. 탐색 계획 노드, 실행 기록, 등록된 사실과 취약점은 <strong>모두 유지됩니다</strong>. 계획 에이전트는 '사용자가 탐색 계획을 삭제함 + 사유' 알림을 받고 이를 반영해 다시 계획을 세웁니다.
                   </>
                 )}
               </AlertDialogDescription>
@@ -2161,7 +2161,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
                   id="cancel-reason"
                   value={cancelReason}
                   onChange={(e) => setCancelReason(e.target.value)}
-                  placeholder="이 의도를 삭제하는 이유를 입력하세요. 예: 방향 판단 오류 / 목표 무효화 / 다른 의도와 중복…"
+                  placeholder="이 탐색 계획을 삭제하는 이유를 입력하세요. 예: 방향 판단 오류 / 목표 무효화 / 다른 탐색 계획과 중복…"
                   rows={3}
                   autoFocus
                 />
@@ -2186,7 +2186,7 @@ export function SessionsTab({ taskId }: { taskId: string }) {
             <AlertDialogHeader>
               <AlertDialogTitle>새 세션을 시작할까요?</AlertDialogTitle>
               <AlertDialogDescription className="break-words whitespace-normal">
-                현재 세션은 아카이브되며 언제든 다시 전환할 수 있습니다. 메인 Agent는 깨끗한 컨텍스트로 계속 진행합니다. 작업의 그래프, 자산, 목표는 영향을 받지 않습니다.
+                현재 세션은 아카이브되며 언제든 다시 전환할 수 있습니다. 메인 에이전트는 깨끗한 컨텍스트로 계속 진행합니다. 작업의 그래프, 점검 대상, 목표는 영향을 받지 않습니다.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

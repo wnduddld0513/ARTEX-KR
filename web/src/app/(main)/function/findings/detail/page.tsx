@@ -85,7 +85,7 @@ function FindingDetailInner() {
       try {
         const updated = await api.setFindingSeverity(id, next);
         setFinding(updated);
-        toast.success(`심각도를 "${statusMeta("severity", next).label}"(으)로 변경했습니다`);
+        toast.success(`심각도를 다음으로 변경했습니다: "${statusMeta("severity", next).label}"`);
       } catch (e) {
         setFinding((cur) => (cur ? { ...cur, severity: prev } : cur));
         toast.error("변경하지 못했습니다: " + (e as Error).message);
@@ -102,7 +102,7 @@ function FindingDetailInner() {
       try {
         const updated = await api.setFindingStatus(id, next);
         setFinding(updated);
-        toast.success(`처리 상태를 "${statusMeta("finding", next).label}"(으)로 변경했습니다`);
+        toast.success(`처리 상태를 다음으로 변경했습니다: "${statusMeta("finding", next).label}"`);
       } catch (e) {
         setFinding((cur) => (cur ? { ...cur, status: prev } : cur));
         toast.error("변경하지 못했습니다: " + (e as Error).message);
@@ -281,8 +281,8 @@ function FindingDetailInner() {
                   )}
                 </FieldRow>
 
-                {/* 관련 자산 */}
-                <FieldRow label="관련 자산">
+                {/* 관련 점검 대상 */}
+                <FieldRow label="관련 점검 대상">
                   {finding.assets && finding.assets.length > 0 ? (
                     <div className="flex flex-wrap justify-end gap-1">
                       {finding.assets.map((a) => (

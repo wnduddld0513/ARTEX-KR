@@ -107,7 +107,7 @@ function AgentGridCard({
             <AlertDialogHeader>
               <AlertDialogTitle>에이전트 「{agent.name}」를 삭제할까요?</AlertDialogTitle>
               <AlertDialogDescription>
-                프롬프트, 변수, 가시성, 도구 바인딩도 함께 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
+                프롬프트, 변수, 사용 권한, 도구 바인딩도 함께 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -239,7 +239,7 @@ export default function AgentsPage() {
       <Card>
         <CardHeader>
           <CardTitle>에이전트 목록</CardTitle>
-          <CardDescription>총 {agents.length} 개</CardDescription>
+          <CardDescription>총 {agents.length}개</CardDescription>
         </CardHeader>
         <CardContent>
           {agents.length === 0 ? (

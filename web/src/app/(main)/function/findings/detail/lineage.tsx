@@ -35,7 +35,7 @@ export function FindingLineageView({ findingId }: { findingId: string }) {
   if (loaded && nodes.length === 0) {
     return (
       <p className="text-muted-foreground p-6 text-sm">
-        표시할 경로가 없습니다(이 취약점에 연결된 탐색 노드가 없거나 소속 작업이 삭제됨).
+        표시할 탐색 경로가 없습니다(이 취약점에 연결된 탐색 노드가 없거나 해당 작업이 삭제됨).
       </p>
     );
   }
@@ -45,7 +45,7 @@ export function FindingLineageView({ findingId }: { findingId: string }) {
       nodes={nodes}
       edges={edges}
       className="h-[68vh]"
-      emptyHint={loaded ? "경로 없음" : "불러오는 중…"}
+      emptyHint={loaded ? "탐색 경로 없음" : "불러오는 중…"}
     />
   );
 }

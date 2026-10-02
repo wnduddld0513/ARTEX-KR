@@ -21,7 +21,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/in
 import type { FindingAssetKind, FindingAssetNode } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-// 아이콘은 자산 페이지의 유형 매핑을 그대로 사용합니다. 같은 자산은 두 곳에서 동일하게 보입니다.
+// 아이콘은 점검 대상 페이지의 유형 매핑을 그대로 사용합니다. 같은 점검 대상은 두 곳에서 동일하게 보입니다.
 const KIND_ICON: Record<FindingAssetKind, LucideIcon> = {
   company: BuildingIcon,
   root_domain: GlobeIcon,
@@ -38,13 +38,13 @@ const KIND_LABEL: Record<FindingAssetKind, string> = {
   root_domain: "루트 도메인",
   subdomain: "서브도메인",
   ip: "IP",
-  app: "애플리케이션",
+  app: "앱",
   service: "서비스",
   endpoint: "엔드포인트",
   none: "미연결",
 };
 
-// TreeNode는 노드 배열로 구성한 트리입니다. 백엔드가 "같은 부모 아래 발견이 많은 순"으로 정렬해 주므로
+// TreeNode는 노드 배열로 구성한 트리입니다. 백엔드가 "같은 부모 아래 취약점이 많은 순"으로 정렬해 주므로
 // 여기서는 배열 순서대로 연결하기만 하면 됩니다.
 interface TreeNode extends FindingAssetNode {
   children: TreeNode[];
@@ -92,7 +92,7 @@ function shortLabel(node: FindingAssetNode, parent?: FindingAssetNode): string {
   }
 
   // 그 외에는 부모 노드가 실제로 이 URL의 호스트일 때만 줄여 씁니다. 아니면 식별 정보가 사라집니다
-  // (예: 서브도메인 자산 행이 없어 서비스가 루트 도메인 아래에 바로 붙은 경우 전체 URL을 보여줘야 함).
+  // (예: 서브도메인 점검 대상 행이 없어 서비스가 루트 도메인 아래에 바로 붙은 경우 전체 URL을 보여줘야 함).
   if (hostOf(node.label) !== hostOf(parent.label)) return node.label;
 
   const url = parseAssetURL(node.label);
@@ -176,9 +176,9 @@ interface AssetTreeProps {
   loading?: boolean;
   truncated?: boolean;
   droppedKinds?: string[];
-  /** 자산을 선택하지 않았을 때 오른쪽에 표시하는 발견 총계이며, "전체 자산" 행에 사용됩니다. */
+  /** 점검 대상을 선택하지 않았을 때 오른쪽에 표시하는 취약점 총계이며, "전체 점검 대상" 행에 사용됩니다. */
   findingTotal: number;
-  /** 자산 뷰는 폴링하지 않으므로 이 버튼이나 페이지 내 추가/삭제/수정으로 트리 집계를 갱신합니다. */
+  /** 점검 대상 뷰는 폴링하지 않으므로 이 버튼이나 페이지 내 추가/삭제/수정으로 트리 집계를 갱신합니다. */
   onRefresh?: () => void;
 }
 
@@ -233,9 +233,9 @@ export function AssetTree({
     [isExpanded],
   );
 
-  let emptyHint = "현재 필터에서 자산에 연결된 발견이 없습니다.";
+  let emptyHint = "현재 필터에서 점검 대상에 연결된 취약점이 없습니다.";
   if (loading) emptyHint = "불러오는 중…";
-  else if (searching) emptyHint = "일치하는 자산이 없습니다.";
+  else if (searching) emptyHint = "일치하는 점검 대상이 없습니다.";
 
   const rows: React.ReactNode[] = [];
   const pushRows = (list: TreeNode[]) => {
@@ -264,8 +264,8 @@ export function AssetTree({
             type="search"
             value={keyword}
             onChange={(event) => setKeyword(event.target.value)}
-            placeholder="자산 필터"
-            aria-label="자산 필터"
+            placeholder="점검 대상 필터"
+            aria-label="점검 대상 필터"
           />
           <InputGroupAddon>
             <SearchIcon aria-hidden="true" />
@@ -278,8 +278,8 @@ export function AssetTree({
             className="size-8 shrink-0 text-muted-foreground"
             onClick={onRefresh}
             disabled={loading}
-            aria-label="자산 트리 새로고침"
-            title="자산 트리 새로고침"
+            aria-label="점검 대상 트리 새로고침"
+            title="점검 대상 트리 새로고침"
           >
             <RefreshCwIcon className={cn("size-4", loading && "animate-spin")} />
           </Button>
@@ -294,7 +294,7 @@ export function AssetTree({
           selected === null ? "bg-accent font-medium" : "hover:bg-accent/50",
         )}
       >
-        <span>전체 자산</span>
+        <span>전체 점검 대상</span>
         <span className="text-xs tabular-nums text-muted-foreground">{findingTotal}</span>
       </button>
 
@@ -307,8 +307,8 @@ export function AssetTree({
 
       {truncated && (
         <p className="px-1 text-xs text-muted-foreground">
-          자산이 너무 많아 {(droppedKinds ?? []).map((k) => KIND_LABEL[k as FindingAssetKind] ?? k).join(" / ")}
-          계층을 숨겼습니다(집계는 상위에 그대로 포함됨). 필터나 검색창으로 좁히면 전체 계층을 볼 수 있습니다.
+          점검 대상이 너무 많아 {(droppedKinds ?? []).map((k) => KIND_LABEL[k as FindingAssetKind] ?? k).join(" / ")}
+          계층을 숨겼습니다(집계에는 그대로 포함됩니다). 필터나 검색으로 좁히면 전체 계층을 볼 수 있습니다.
         </p>
       )}
     </div>
@@ -371,7 +371,7 @@ function AssetTreeRow({
             {node.high}
           </span>
         )}
-        <span className="text-muted-foreground" title={`발견 ${node.total}건`}>
+        <span className="text-muted-foreground" title={`취약점 ${node.total}건`}>
           {node.total}
         </span>
       </span>

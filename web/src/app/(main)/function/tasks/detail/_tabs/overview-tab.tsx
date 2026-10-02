@@ -75,7 +75,7 @@ const SCOPE_KIND_LABELS: Record<TaskScopeRow["kind"], string> = {
 
 const SCOPE_SOURCE_LABELS: Record<TaskScopeRow["source"], string> = {
   auto: "자동",
-  agent: "Agent",
+  agent: "에이전트",
   manual: "수동",
 };
 
@@ -457,7 +457,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
           <CardTitle className="flex items-center gap-2 text-base">
             <ListChecksIcon className="size-4 text-primary" /> 목표 관리
             <span className="text-muted-foreground text-xs font-normal">
-              (최종 검증 가능한 목표, 총  {goals.length} 개. 추가/수정 시 플래너에게 알림이 전송되고 작업이 다시 활성화됩니다)
+              (최종 검증 가능한 목표, 총 {goals.length}개. 추가하거나 수정하면 계획 에이전트에게 알림이 전송되고 작업이 다시 활성화됩니다)
             </span>
           </CardTitle>
         </CardHeader>
@@ -568,7 +568,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
               )}
             </div>
           ) : (
-            <p className="text-muted-foreground text-sm">목표가 없습니다. 추가하면 플래너가 이를 기준으로 탐색 의도를 배분하고 달성 여부를 판정합니다.</p>
+            <p className="text-muted-foreground text-sm">목표가 없습니다. 추가하면 계획 에이전트가 이를 기준으로 탐색 계획을 배분하고 달성 여부를 판정합니다.</p>
           )}
         </CardContent>
       </Card>
@@ -578,9 +578,9 @@ export function OverviewTab({ taskId }: { taskId: string }) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <ShieldAlertIcon className="size-4 text-amber-500" /> 작업 제약
+            <ShieldAlertIcon className="size-4 text-amber-500" /> 작업 규칙
             <span className="text-muted-foreground text-xs font-normal">
-              (planner/worker의 탐색 경계를 설정, 총  {constraints.length} 개. 변경 사항은 다음 계획 주기부터 적용됩니다)
+              (계획 에이전트/실행 에이전트의 탐색 경계를 설정, 총 {constraints.length}개. 변경 사항은 다음 계획 주기부터 적용됩니다)
             </span>
           </CardTitle>
         </CardHeader>
@@ -597,7 +597,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
             </NativeSelect>
             <Input
               className="h-7 min-w-56 flex-1 text-sm"
-              placeholder="작업 제약 입력, 예: '현재 포트만 테스트하고 다른 포트는 스캔하지 않음'"
+              placeholder="작업 규칙 입력, 예: '현재 포트만 테스트하고 다른 포트는 스캔하지 않음'"
               value={conText}
               onChange={(e) => setConText(e.target.value)}
               onKeyDown={(e) => {
@@ -695,7 +695,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
             </div>
           ) : (
             <p className="text-muted-foreground text-sm">
-              작업 제약이 없습니다. 작업 생성 시 설명/목표에서 자동으로 추출되며, 여기서 직접 추가/수정/삭제하여 '허용/금지할 작업'을 지정할 수 있습니다.
+              작업 규칙이 없습니다. 작업 생성 시 설명/목표에서 자동으로 추출되며, 여기서 직접 추가/수정/삭제하여 '허용/금지할 작업'을 지정할 수 있습니다.
             </p>
           )}
         </CardContent>
@@ -705,7 +705,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <TargetIcon className="size-4 text-emerald-500" /> 자산 테스트 커버리지
+              <TargetIcon className="size-4 text-emerald-500" /> 점검 대상 커버리지
               <span className="text-muted-foreground text-xs font-normal">(대략적인 추정치, 참고용)</span>
             </CardTitle>
           </CardHeader>
@@ -811,7 +811,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
           <CardTitle className="flex items-center gap-2 text-base">
             <ShieldCheckIcon className="size-4 text-emerald-500" /> 테스트 범위
             <span className="text-muted-foreground text-xs font-normal">
-              (커버리지 분모 + 권한 경계, 총  {scope.length} 개)
+              (커버리지 분모 + 권한 경계, 총 {scope.length}개)
             </span>
           </CardTitle>
         </CardHeader>
@@ -887,7 +887,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground text-sm">테스트 범위가 없습니다. 추가하면 자산 커버리지의 분모로 사용됩니다.</p>
+            <p className="text-muted-foreground text-sm">테스트 범위가 없습니다. 추가하면 점검 대상 커버리지의 분모로 사용됩니다.</p>
           )}
         </CardContent>
       </Card>
@@ -909,7 +909,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
             />
           </div>
           <div>
-            <div className="text-xs text-muted-foreground">실행 중 Worker</div>
+            <div className="text-xs text-muted-foreground">실행 중 워커</div>
             <div className="mt-1 text-lg font-semibold tabular-nums">{running.length}</div>
           </div>
           <div>
@@ -942,7 +942,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm">
-              <TargetIcon className="size-4" /> 진행 중 의도
+              <TargetIcon className="size-4" /> 진행 중 탐색 계획
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
@@ -952,7 +952,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
                 <span className="min-w-0 flex-1 truncate">{i.payload}</span>
               </div>
             ))}
-            {running.length === 0 && <p className="text-sm text-muted-foreground">진행 중인 의도 없음</p>}
+            {running.length === 0 && <p className="text-sm text-muted-foreground">진행 중인 탐색 계획 없음</p>}
           </CardContent>
         </Card>
 
@@ -977,7 +977,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
             </div>
             <div>
               <div className="text-2xl font-semibold tabular-nums text-red-600">{blocked.length}</div>
-              <div className="text-xs text-muted-foreground">차단된 의도</div>
+              <div className="text-xs text-muted-foreground">차단된 탐색 계획</div>
             </div>
           </CardContent>
         </Card>
@@ -985,7 +985,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm">
-              <BugIcon className="size-4 text-red-500" /> 최근 발견
+              <BugIcon className="size-4 text-red-500" /> 최근 취약점
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
@@ -995,7 +995,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
                 <span className="min-w-0 flex-1 truncate">{f.summary}</span>
               </div>
             ))}
-            {taskFindings.length === 0 && <p className="text-sm text-muted-foreground">발견 없음</p>}
+            {taskFindings.length === 0 && <p className="text-sm text-muted-foreground">취약점 없음</p>}
           </CardContent>
         </Card>
       </div>
@@ -1006,8 +1006,8 @@ export function OverviewTab({ taskId }: { taskId: string }) {
         <Card className="border-red-500/30">
           <CardHeader className="flex-row items-center justify-between gap-2 space-y-0">
             <CardTitle className="flex items-center gap-2 text-sm">
-              <AlertTriangleIcon className="size-4 text-red-500" /> 차단/오류 의도
-              <span className="text-xs font-normal text-muted-foreground">(총  {blocked.length} 개, 재실행 가능)</span>
+              <AlertTriangleIcon className="size-4 text-red-500" /> 차단/오류 탐색 계획
+              <span className="text-xs font-normal text-muted-foreground">(총 {blocked.length}개, 재실행 가능)</span>
             </CardTitle>
             <Button size="sm" variant="outline" disabled={rerunning.has("__all__")} onClick={() => void rerunAll()}>
               <RefreshCwIcon className={`size-3.5 ${rerunning.has("__all__") ? "animate-spin" : ""}`} />
@@ -1033,7 +1033,7 @@ export function OverviewTab({ taskId }: { taskId: string }) {
             ))}
             {blocked.length > 20 && (
               <p className="text-xs text-muted-foreground">
-                처음 20개만 표시됩니다. '모두 재실행'을 눌러 나머지  {blocked.length - 20} 개를 처리하세요.
+                처음 20개만 표시됩니다. '모두 재실행'을 눌러 나머지 {blocked.length - 20}개를 처리하세요.
               </p>
             )}
           </CardContent>
@@ -1042,9 +1042,9 @@ export function OverviewTab({ taskId }: { taskId: string }) {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-        <StatCard label="대기 의도" value={open.length} icon={ShieldCheckIcon} sub="frontier 열림" />
-        <StatCard label="확인된 발견" value={taskFindings.length} icon={BugIcon} sub="이 작업" />
-        <StatCard label="전체 의도" value={intents.length} icon={AlertTriangleIcon} sub="이 작업의 모든 의도" />
+        <StatCard label="대기 탐색 계획" value={open.length} icon={ShieldCheckIcon} sub="frontier 열림" />
+        <StatCard label="확인된 취약점" value={taskFindings.length} icon={BugIcon} sub="이 작업" />
+        <StatCard label="전체 탐색 계획" value={intents.length} icon={AlertTriangleIcon} sub="이 작업의 모든 탐색 계획" />
       </div>
     </div>
   );
@@ -1168,9 +1168,9 @@ function TaskInterceptRulesCard({ taskId }: { taskId: string }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <ShieldCheckIcon className="size-4 text-sky-500" /> 작업 수준 자산 차단 / 허용
+          <ShieldCheckIcon className="size-4 text-sky-500" /> 작업 수준 점검 대상 차단 / 허용
           <span className="text-muted-foreground text-xs font-normal">
-            (이 작업에만 적용되며 전역으로 저장되지 않습니다. 차단 우선, 허용 나중, 총  {rules.length} 개)
+            (이 작업에만 적용되며 전역으로 저장되지 않습니다. 차단 규칙을 먼저 적용하고 허용 규칙을 나중에 적용합니다. 총 {rules.length}개)
           </span>
         </CardTitle>
       </CardHeader>
@@ -1313,7 +1313,7 @@ function TaskInterceptRulesCard({ taskId }: { taskId: string }) {
           </div>
         ) : (
           <p className="text-muted-foreground text-sm">
-            작업 수준 규칙이 없습니다. '차단' 규칙에 해당하면 테스트가 금지되며, '허용'은 화이트리스트로, 설정 시 허용 규칙에 해당하는 자산만 이 작업에서 테스트할 수 있습니다(미설정 시 화이트리스트를 사용하지 않습니다).
+            작업 수준 규칙이 없습니다. '차단' 규칙에 해당하면 테스트가 금지되고, '허용' 규칙은 허용 목록으로 동작합니다. 허용 규칙을 설정하면 해당 규칙에 맞는 점검 대상만 이 작업에서 테스트할 수 있으며, 설정하지 않으면 허용 목록을 사용하지 않습니다.
           </p>
         )}
       </CardContent>

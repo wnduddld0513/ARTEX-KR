@@ -136,7 +136,7 @@ export function TaskLLMProfileChain({
       </Combobox>
 
       {value.length === 0 ? (
-        <p className="text-muted-foreground text-xs">구성을 지정하지 않으면 작업은 Agent 또는 전역 활성 구성을 따릅니다.</p>
+        <p className="text-muted-foreground text-xs">구성을 지정하지 않으면 작업은 에이전트 또는 전역 활성 구성을 따릅니다.</p>
       ) : (
         <div className="flex flex-col divide-y rounded-lg border">
           {value.map((id, index) => {

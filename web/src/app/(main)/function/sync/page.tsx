@@ -30,15 +30,15 @@ type Dimension = "project" | "task";
 const ASSET_TYPES: { key: string; label: string }[] = [
   { key: "subdomain", label: "서브도메인" },
   { key: "service", label: "서비스" },
-  { key: "app", label: "애플리케이션" },
+  { key: "app", label: "앱" },
 ];
 
 export default function AssetSyncPage() {
   return (
     <div className="p-4 md:p-6">
       <div className="mb-4">
-        <h1 className="font-semibold text-xl">자산 동기화</h1>
-        <p className="text-muted-foreground text-sm">외부 데이터 소스에서 자산을 동기화하여 저장합니다</p>
+        <h1 className="font-semibold text-xl">점검 대상 동기화</h1>
+        <p className="text-muted-foreground text-sm">외부 데이터 소스에서 점검 대상을 동기화해 저장합니다</p>
       </div>
       <Tabs defaultValue="scopesentry">
         <TabsList>
@@ -61,7 +61,7 @@ function ScopeSentryPanel() {
     api
       .ssStatus()
       .then(setStatus)
-      .catch((e) => toast.error(`데이터 소스 상태를 읽지 못했습니다: ${e.message}`))
+      .catch((e) => toast.error(`데이터 소스 상태를 불러오지 못했습니다: ${e.message}`))
       .finally(() => setLoadingStatus(false));
   }, []);
 
@@ -124,7 +124,7 @@ function DataSourceCard({
     setBusy(true);
     try {
       const r = await api.ssDatasource({ url: url.trim(), api_key: apiKey.trim() });
-      toast.success(r.enabled ? "데이터 소스를 저장하고 활성화했습니다" : "저장했습니다(아직 활성화 조건을 충족하지 않음)");
+      toast.success(r.enabled ? "데이터 소스를 저장하고 활성화했습니다" : "저장했습니다(아직 활성화되지 않음)");
       setApiKey("");
       onChanged();
     } catch (e) {
@@ -149,7 +149,7 @@ function DataSourceCard({
         {!status?.exists ? (
           <div className="flex items-center justify-between gap-4">
             <p className="text-muted-foreground text-sm">
-              아직 ScopeSentry 데이터 소스가 없습니다. 만들면 자리 표시자 MCP가 추가됩니다(주소/키 비어 있음, 비활성).
+              아직 ScopeSentry 데이터 소스가 없습니다. 만들면 주소와 키가 비어 있는 비활성 MCP가 추가됩니다.
             </p>
             <Button onClick={create} disabled={busy}>
               데이터 소스 만들기
@@ -185,7 +185,7 @@ function DataSourceCard({
                 저장 및 활성화
               </Button>
               {status.enabled && status.tools.length > 0 && (
-                <span className="text-muted-foreground text-xs">도구 {status.tools.length}개 발견</span>
+                <span className="text-muted-foreground text-xs">도구 {status.tools.length}개를 찾았습니다</span>
               )}
             </div>
           </>
@@ -267,7 +267,7 @@ function SyncWorkbench() {
 
   const runSync = async () => {
     if (selected.size === 0) return toast.error(`${dimension === "project" ? "프로젝트" : "작업"}을(를) 하나 이상 선택하세요`);
-    if (chosenTypes.length === 0) return toast.error("자산 유형을 하나 이상 선택하세요");
+    if (chosenTypes.length === 0) return toast.error("점검 대상 유형을 하나 이상 선택하세요");
     setSyncing(true);
     setResult(null);
     try {
@@ -279,7 +279,7 @@ function SyncWorkbench() {
       });
       setResult(r);
       const total = Object.values(r.synced ?? {}).reduce((a, b) => a + b, 0);
-      toast.success(`동기화 완료, 자산 ${total}건을 저장했습니다`);
+      toast.success(`동기화 완료, 점검 대상 ${total}건을 저장했습니다`);
     } catch (e) {
       toast.error(`동기화하지 못했습니다: ${(e as Error).message}`);
     } finally {
@@ -337,7 +337,7 @@ function SyncWorkbench() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">데이터 동기화 선택</CardTitle>
+        <CardTitle className="text-base">동기화할 데이터 선택</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* 기준 전환 */}
@@ -354,9 +354,9 @@ function SyncWorkbench() {
           </TabsList>
         </Tabs>
 
-        {/* 자산 유형 + 옵션 */}
+        {/* 점검 대상 유형 + 옵션 */}
         <div className="flex flex-wrap items-center gap-4">
-          <span className="font-medium text-sm">동기화할 자산: </span>
+          <span className="font-medium text-sm">동기화할 점검 대상: </span>
           {ASSET_TYPES.map((t) => (
             <label key={t.key} htmlFor={`at-${t.key}`} className="flex items-center gap-1.5 text-sm">
               <Checkbox
@@ -370,7 +370,7 @@ function SyncWorkbench() {
           {dimension === "project" && (
             <label htmlFor="create-company" className="flex items-center gap-1.5 text-sm">
               <Checkbox id="create-company" checked={createCompany} onCheckedChange={(c) => setCreateCompany(!!c)} />
-              프로젝트별 기업을 만들고 자산 범위에 기록
+              프로젝트별 기업을 만들고 점검 대상에 기록
             </label>
           )}
         </div>
@@ -414,7 +414,7 @@ function SyncWorkbench() {
                 {dimension === "project" ? (
                   <>
                     <TableHead>태그</TableHead>
-                    <TableHead className="text-right">자산 수</TableHead>
+                    <TableHead className="text-right">점검 대상 수</TableHead>
                   </>
                 ) : (
                   <>
@@ -433,7 +433,7 @@ function SyncWorkbench() {
           <Button variant="outline" size="sm" disabled={page <= 1 || loading} onClick={() => setPage((p) => p - 1)}>
             이전 페이지
           </Button>
-          <span className="text-muted-foreground text-xs">{page} 페이지</span>
+          <span className="text-muted-foreground text-xs">{page}페이지</span>
           <Button
             variant="outline"
             size="sm"
@@ -453,7 +453,7 @@ function SyncWorkbench() {
 
 function SyncResult({ result }: { result: Awaited<ReturnType<typeof api.ssSync>> }) {
   const synced = result.synced ?? {};
-  const labels: Record<string, string> = { subdomain: "서브도메인", service: "서비스", app: "애플리케이션", ip: "IP" };
+  const labels: Record<string, string> = { subdomain: "서브도메인", service: "서비스", app: "앱", ip: "IP" };
   return (
     <div className="space-y-2 rounded-md border bg-muted/40 p-3 text-sm">
       <div className="flex flex-wrap gap-3">
@@ -464,7 +464,7 @@ function SyncResult({ result }: { result: Awaited<ReturnType<typeof api.ssSync>>
         ))}
       </div>
       {result.companies && result.companies.length > 0 && (
-        <p className="text-muted-foreground">생성/갱신한 기업: {result.companies.join(", ")}</p>
+        <p className="text-muted-foreground">생성·갱신한 기업: {result.companies.join(", ")}</p>
       )}
       {result.warnings && result.warnings.length > 0 && (
         <ul className="list-inside list-disc text-amber-600 dark:text-amber-500">

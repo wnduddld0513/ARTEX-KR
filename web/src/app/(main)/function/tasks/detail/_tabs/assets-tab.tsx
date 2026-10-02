@@ -133,7 +133,7 @@ function Chips({ items, mono }: { items: string[]; mono?: boolean }) {
 
 function SourceCell({ asset }: { asset: Asset }) {
   const source = firstText([asset.task_source], "legacy");
-  const summary = firstText([asset.task_source_summary], "이전 작업 자산 연결에서 이전되었으며, 더 자세한 출처 설명이 없습니다");
+  const summary = firstText([asset.task_source_summary], "이전 작업의 점검 대상 연결에서 넘어왔으며 자세한 출처 설명은 없습니다");
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -192,7 +192,7 @@ function AssetCard({
     tableRows = (
       <TableRow>
         <TableCell colSpan={cols.length} className="py-10 text-center text-muted-foreground text-sm">
-          현재 분류에 테스트 자산이 없습니다
+          현재 분류에 점검 대상이 없습니다
         </TableCell>
       </TableRow>
     );
@@ -227,7 +227,7 @@ function AssetCard({
               <SelectGroup>
                 {PAGE_SIZES.map((value) => (
                   <SelectItem key={value} value={String(value)}>
-                    {value} 개/페이지
+                    페이지당 {value}개
                   </SelectItem>
                 ))}
               </SelectGroup>
@@ -293,7 +293,7 @@ function AddTaskAssetsSheet({
     try {
       const result = await api.registerTaskAssetScopes(taskId, parsedScope.rules);
       const assetSummary = result.assets_linked + result.assets_existing;
-      toast.success(`범위 ${result.requested}개를 등록하고 도메인/IP 자산 ${assetSummary}개를 연결했습니다`);
+      toast.success(`테스트 대상 ${result.requested}건을 등록하고 도메인/IP 점검 대상 ${assetSummary}개를 연결했습니다`);
       onAttached();
       onOpenChange(false);
     } catch (reason) {
@@ -307,9 +307,9 @@ function AddTaskAssetsSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-xl">
         <SheetHeader>
-          <SheetTitle>테스트 자산 추가</SheetTitle>
+          <SheetTitle>점검 대상 추가</SheetTitle>
           <SheetDescription>
-            테스트 범위를 직접 입력하세요. 도메인과 IP는 전역 자산을 생성하거나 재사용하며, CIDR, ICP, 키워드는 Agent 범위 컨텍스트로 사용됩니다.
+            테스트 범위를 직접 입력하세요. 도메인과 IP는 전역 점검 대상을 만들거나 재사용하고, CIDR, ICP, 키워드는 에이전트가 참고할 테스트 범위 정보로 사용됩니다.
           </SheetDescription>
         </SheetHeader>
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4">
@@ -318,7 +318,7 @@ function AddTaskAssetsSheet({
             value={scopeText}
             onValueChange={setScopeText}
             parsed={parsedScope}
-            label="테스트 자산 및 범위"
+            label="점검 대상 및 범위"
             description="한 줄에 하나씩 입력하면 도메인, IP, CIDR, ICP 등록번호, 키워드를 자동으로 인식합니다."
           />
         </div>
@@ -331,7 +331,7 @@ function AddTaskAssetsSheet({
             disabled={saving || parsedScope.rules.length === 0 || parsedScope.errors.length > 0}
           >
             {saving ? <Spinner data-icon="inline-start" /> : <PlusIcon data-icon="inline-start" />}
-            등록 {parsedScope.rules.length > 0 ? parsedScope.rules.length : ""} 개
+            등록 {parsedScope.rules.length > 0 ? parsedScope.rules.length : ""}개
           </Button>
         </SheetFooter>
       </SheetContent>
@@ -404,7 +404,7 @@ export function AssetsTab({ taskId }: { taskId: string }) {
           setRows([]);
           setTotal(0);
         } else {
-          toast.error(`작업 자산 로드 실패: ${message}`);
+          toast.error(`작업 점검 대상을 불러오지 못했습니다: ${message}`);
         }
       } finally {
         if (active && assetsRequestRef.current === request) {
@@ -453,7 +453,7 @@ export function AssetsTab({ taskId }: { taskId: string }) {
       variant="ghost"
       size="icon-sm"
       onClick={() => setRemoveTarget(asset)}
-      aria-label={`자산 ${assetLabel(asset)}을(를) 작업에서 제거`}
+      aria-label={`점검 대상 ${assetLabel(asset)}을(를) 작업에서 제거`}
       title="작업에서 제거"
     >
       <Trash2Icon />
@@ -477,12 +477,12 @@ export function AssetsTab({ taskId }: { taskId: string }) {
     <div className="flex min-h-0 flex-1 flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="font-medium text-sm">테스트 자산</h2>
-          <p className="text-muted-foreground text-xs">현재 작업에 연결된 자산 {totalAll} 개</p>
+          <h2 className="font-medium text-sm">점검 대상</h2>
+          <p className="text-muted-foreground text-xs">현재 작업에 연결된 점검 대상 {totalAll}개</p>
         </div>
         <Button size="sm" onClick={() => setAddOpen(true)}>
           <PlusIcon data-icon="inline-start" />
-          테스트 자산 추가
+          점검 대상 추가
         </Button>
       </div>
 
@@ -521,7 +521,7 @@ export function AssetsTab({ taskId }: { taskId: string }) {
         </TabsContent>
 
         <TabsContent value="ip" className="mt-0 flex min-h-0 flex-1 flex-col">
-          <AssetCard cols={["IP", "C 세그먼트", "바인딩된 도메인", "열린 포트", "출처", "작업"]} {...commonCardProps}>
+          <AssetCard cols={["IP", "C 대역", "연결된 도메인", "열린 포트", "출처", "작업"]} {...commonCardProps}>
             {rows.map((asset) => (
               <TableRow key={asset.id}>
                 <TableCell className="font-medium font-mono text-xs">{asset.ip}</TableCell>
@@ -566,7 +566,7 @@ export function AssetsTab({ taskId }: { taskId: string }) {
         </TabsContent>
 
         <TabsContent value="app" className="mt-0 flex min-h-0 flex-1 flex-col">
-          <AssetCard cols={["앱", "주소", "분류", "제목", "지문", "출처", "작업"]} {...commonCardProps}>
+          <AssetCard cols={["앱", "주소", "분류", "제목", "핑거프린트", "출처", "작업"]} {...commonCardProps}>
             {rows.map((asset) => (
               <TableRow key={asset.id}>
                 <TableCell className="max-w-48 truncate font-medium text-xs">{asset.app_name || "—"}</TableCell>
@@ -589,7 +589,7 @@ export function AssetsTab({ taskId }: { taskId: string }) {
 
         <TabsContent value="service" className="mt-0 flex min-h-0 flex-1 flex-col">
           <AssetCard
-            cols={["주소 / 서비스", "상태 코드", "제목", "응답 길이", "지문", "인증", "출처", "작업"]}
+            cols={["주소 / 서비스", "상태 코드", "제목", "응답 길이", "핑거프린트", "인증", "출처", "작업"]}
             {...commonCardProps}
           >
             {rows.map((asset) => {
@@ -682,8 +682,8 @@ export function AssetsTab({ taskId }: { taskId: string }) {
           <AlertDialogHeader>
             <AlertDialogTitle>현재 작업에서 제거할까요?</AlertDialogTitle>
             <AlertDialogDescription className="[overflow-wrap:anywhere]">
-              {removeTarget ? `${assetLabel(removeTarget)}을(를) 현재 작업의 테스트 자산에서 제거합니다.` : ""}
-              전역 자산, 관련 트래픽, 기존 블랙보드 앵커는 그대로 유지됩니다.
+              {removeTarget ? `${assetLabel(removeTarget)}을(를) 현재 작업의 점검 대상에서 제거합니다.` : ""}
+              전역 점검 대상, 관련 트래픽, 기존 블랙보드 앵커는 그대로 유지됩니다.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -176,7 +176,7 @@ function ToolEditor({
         agents: bound,
         enabled,
       });
-      toast.success(`도구 「${tool.key}」 저장됨`);
+      toast.success(`도구 「${tool.key}」를 저장했습니다`);
       onSaved();
       onClose();
     } catch (e) {
@@ -188,7 +188,7 @@ function ToolEditor({
   async function reset() {
     try {
       await api.resetTool(tool.key);
-      toast.success(`도구 「${tool.key}」 코드 기본값으로 복원`);
+      toast.success(`도구 「${tool.key}」를 코드 기본값으로 복원했습니다`);
       onSaved();
       onClose();
     } catch (e) {
@@ -207,7 +207,7 @@ function ToolEditor({
         {/* binding + switch */}
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
           <div className="grid gap-1.5">
-            <Label className="text-muted-foreground text-xs">에이전트 바인딩(이 도구를 어떤 에이전트에게 줄지 결정)</Label>
+            <Label className="text-muted-foreground text-xs">에이전트 바인딩(이 도구를 사용할 에이전트 지정)</Label>
             <div className="flex flex-wrap gap-3">
               {agents.map((ag) => (
                 <label key={ag.key} className="flex items-center gap-2 text-sm">
@@ -245,7 +245,7 @@ function ToolEditor({
         {/* params */}
         <div className="grid gap-2">
           <Label className="text-muted-foreground text-xs">
-            파라미터(이름 / 유형 / 필수는 읽기 전용, 설명과 기본값은 수정 가능)
+            파라미터(이름 / 유형 / 필수 여부는 읽기 전용, 설명과 기본값만 수정 가능)
           </Label>
           {rows.length === 0 && <span className="text-muted-foreground text-xs">(파라미터 없음)</span>}
           {rows.map((r, i) => (
@@ -284,7 +284,7 @@ function ToolEditor({
                   <Label className="text-muted-foreground text-[11px]">기본값</Label>
                   <Input
                     className="text-xs"
-                    placeholder={r.scalar ? "(비우면 기본값 없음)" : "스칼라만 지원"}
+                    placeholder={r.scalar ? "(비워두면 기본값 없음)" : "스칼라만 지원"}
                     disabled={!r.scalar}
                     value={r.defaultStr}
                     onChange={(e) => setRow(i, { defaultStr: e.target.value })}
@@ -405,11 +405,11 @@ export default function ToolsPage() {
           <h1 className="text-xl font-semibold tracking-tight">도구</h1>
           <p className="text-muted-foreground text-sm">시스템 도구의 설명/바인딩과 사용자 정의 도구(command/script/http)</p>
         </div>
-        <div className="relative w-64">
+        <div className="relative w-72">
           <SearchIcon className="text-muted-foreground absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2" />
           <Input
             className="h-8 pl-8 text-sm"
-            placeholder="도구 이름, 설명, 에이전트 검색…"
+            placeholder="도구 이름, 설명, 에이전트 검색"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -428,8 +428,8 @@ export default function ToolsPage() {
               <CardTitle>시스템 도구</CardTitle>
               <CardDescription>
                 {query.trim()
-                  ? `${systemTools.length} / ${allSystemCount}개 일치 — 카드를 클릭해 설명, 파라미터 기본값, 에이전트 바인딩을 편집하세요`
-                  : `총${allSystemCount}개 — 카드를 클릭해 설명, 파라미터 기본값, 에이전트 바인딩을 편집하세요`}
+                  ? `${allSystemCount}개 중 ${systemTools.length}개 일치 — 카드를 클릭해 설명, 파라미터 기본값, 에이전트 바인딩을 편집하세요`
+                  : `총 ${allSystemCount}개 — 카드를 클릭해 설명, 파라미터 기본값, 에이전트 바인딩을 편집하세요`}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -456,7 +456,7 @@ export default function ToolsPage() {
                   <CardTitle>사용자 정의 도구</CardTitle>
                   <CardDescription>
                     {query.trim()
-                      ? `shell/command/script/http, ${customTools.length} / ${allCustomCount}개 일치 — 카드를 클릭해 편집하세요`
+                      ? `shell/command/script/http, ${allCustomCount}개 중 ${customTools.length}개 일치 — 카드를 클릭해 편집하세요`
                       : `shell(bash 선언) / command(명령) / script(Python) / http(API), 총 ${allCustomCount}개 — 카드를 클릭해 편집하세요`}
                   </CardDescription>
                 </div>
@@ -622,7 +622,7 @@ function CustomToolDialog({
     if (kind === "http") {
       const props = (schema as { properties?: Record<string, unknown> }).properties;
       if (!props || Object.keys(props).length === 0) {
-        toast.error("http 도구는 파라미터 JSON Schema를 반드시 제공해야 합니다(properties 포함, 비워둘 수 없음)");
+        toast.error("http 도구는 파라미터 JSON Schema를 반드시 제공해야 합니다(properties 포함, 비워 둘 수 없음)");
         return;
       }
     }
@@ -679,7 +679,7 @@ function CustomToolDialog({
       >
         <SheetHeader className="px-4">
           <SheetTitle>{isNew ? "새 사용자 정의 도구" : `편집 ${tool?.key}`}</SheetTitle>
-          <SheetDescription>shell=bash 환경 선언(이름+설명만 있으면 되며 모델에 bash로 호출 가능함을 알립니다). command/script/http는 실행 사양을 작성해야 합니다.</SheetDescription>
+          <SheetDescription>shell=bash 환경 선언(이름과 설명만 있으면 되며, 모델에게 bash로 호출할 수 있다고 알려 줍니다). command/script/http는 실행 사양을 작성해야 합니다.</SheetDescription>
         </SheetHeader>
 
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4">
@@ -705,13 +705,13 @@ function CustomToolDialog({
               </SelectContent>
             </Select>
             {kind === "shell" && (
-              <p className="text-muted-foreground text-xs">nmap, sqlmap, ffuf 같이 널리 알려진 도구에 적합합니다 — 모델이 사용법을 이미 알므로 「bash에서 호출 가능」이라고 선언하기만 하면 됩니다. 이름+설명이 Bash 도구 설명에 추가됩니다.</p>
+              <p className="text-muted-foreground text-xs">nmap, sqlmap, ffuf 같이 널리 알려진 도구에 적합합니다 — 모델이 사용법을 이미 알므로 「bash에서 호출 가능」이라고 선언하기만 하면 됩니다. 이름과 설명이 Bash 도구 설명에 추가됩니다.</p>
             )}
           </div>
 
           {kind === "command" && (
             <div className="grid gap-1.5">
-              <Label className="text-xs">명령 템플릿(자리 표시자  {"{param}"}, 예: nmap -p  {"{ports}"} {"{target}"})</Label>
+              <Label className="text-xs">명령 템플릿(자리 표시자 {"{param}"}, 예: nmap -p {"{ports}"} {"{target}"})</Label>
               <Textarea className="font-mono text-xs" rows={2} value={ex.command}
                 onChange={(e) => setEx({ ...ex, command: e.target.value })} />
             </div>
@@ -732,17 +732,17 @@ function CustomToolDialog({
                   <Input className="w-24" value={ex.method} onChange={(e) => setEx({ ...ex, method: e.target.value })} />
                 </div>
                 <div className="grid flex-1 gap-1.5">
-                  <Label className="text-xs">URL(포함 가능:  {"{param}"})</Label>
+                  <Label className="text-xs">URL(포함 가능: {"{param}"})</Label>
                   <Input className="font-mono text-xs" value={ex.url} onChange={(e) => setEx({ ...ex, url: e.target.value })} />
                 </div>
               </div>
               <div className="grid gap-1.5">
-                <Label className="text-xs">Headers(JSON, 포함 가능:  {"{param}"})</Label>
+                <Label className="text-xs">Headers(JSON, 포함 가능: {"{param}"})</Label>
                 <Textarea className="font-mono text-xs" rows={2} value={ex.headers}
                   placeholder={'{"Authorization": "Bearer {token}"}'} onChange={(e) => setEx({ ...ex, headers: e.target.value })} />
               </div>
               <div className="grid gap-1.5">
-                <Label className="text-xs">Body(포함 가능:  {"{param}"})</Label>
+                <Label className="text-xs">Body(포함 가능: {"{param}"})</Label>
                 <Textarea className="font-mono text-xs" rows={2} value={ex.body} onChange={(e) => setEx({ ...ex, body: e.target.value })} />
               </div>
               <div className="flex items-center gap-4">
@@ -770,7 +770,7 @@ function CustomToolDialog({
           {kind !== "shell" && (
             <div className="grid gap-1.5">
               <Label className="text-xs">
-                파라미터 JSON Schema{kind === "http" ? "(http 도구는 필수이며 properties를 포함해야 함)" : "(비워두면 {args} 얇은 래퍼를 자동 생성)"}
+                파라미터 JSON Schema{kind === "http" ? "(http 도구는 필수이며 properties를 포함해야 함)" : "(비워두면 {args} 래퍼를 자동 생성)"}
               </Label>
               <Textarea className="font-mono text-xs" rows={4} value={schemaText}
                 placeholder={'{"type":"object","properties":{"target":{"type":"string"}},"required":["target"]}'}

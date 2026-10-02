@@ -14,7 +14,7 @@ AI 자율 침투 테스트 시스템 (Go 백엔드 + Next.js 프런트엔드)
 
 ---
 
-> **한국어 UI 범위**: 메뉴, 작업 화면, 자산·취약점 관리, 채팅, 시스템 설정, 알림과 데모 데이터를 한국어로 제공합니다. 사용자 문서는 한국어로, 에이전트가 읽는 `skills/`의 스킬 지침과 참고 문서는 영어로 제공합니다. **사용자 입력, 외부 도구 출력, 모델 응답, 기존 데이터베이스에 들어 있는 내용, 에이전트 프롬프트는 원문 그대로 유지**됩니다. 원본의 라이선스와 저작권 고지도 그대로 유지합니다. 짧은 안내 파일 [README.ko.md](README.ko.md)는 이 문서로 통합되었습니다.
+> **한국어 UI 범위**: 메뉴, 작업 화면, 점검 대상·취약점 관리, 채팅, 시스템 설정, 알림과 데모 데이터를 한국어로 제공합니다. 사용자 문서는 한국어로, 에이전트가 읽는 `skills/`의 스킬 지침과 참고 문서는 영어로 제공합니다. **사용자 입력, 외부 도구 출력, 모델 응답, 기존 데이터베이스에 들어 있는 내용, 에이전트 프롬프트는 원문 그대로 유지**됩니다. 원본의 라이선스와 저작권 고지도 그대로 유지합니다. 짧은 안내 파일 [README.ko.md](README.ko.md)는 이 문서로 통합되었습니다.
 
 ## 스크린샷
 
@@ -22,7 +22,7 @@ AI 자율 침투 테스트 시스템 (Go 백엔드 + Next.js 프런트엔드)
 >
 > 아래 스크린샷은 원본 프로젝트의 화면입니다. 한국어 포크와 표시 문구가 다를 수 있습니다.
 
-| 대시보드(개요 / 토큰 소비 / 활동 피드) | 작업 목록 |
+| 대시보드(개요 / 토큰 사용량 / 활동 기록) | 작업 목록 |
 | :---: | :---: |
 | ![대시보드](screenshots/dashboard.png) | ![작업](screenshots/tasks.png) |
 
@@ -30,21 +30,21 @@ AI 자율 침투 테스트 시스템 (Go 백엔드 + Next.js 프런트엔드)
 | :---: | :---: |
 | ![실행 과정](screenshots/sessions.png) | ![공격 경로](screenshots/graph.png) |
 
-| 발견 | 자산 |
+| 취약점 | 점검 대상 |
 | :---: | :---: |
-| ![발견](screenshots/findings.png) | ![자산](screenshots/assets.png) |
+| ![취약점](screenshots/findings.png) | ![점검 대상](screenshots/assets.png) |
 
-| 자산 커버리지 그래프(포스 레이아웃 · 테스트 완료 하이라이트 · 노드 접기/펼치기) |
+| 점검 대상 커버리지 그래프(힘 기반 배치 · 테스트 완료 하이라이트 · 노드 접기/펼치기) |
 | :---: |
-| ![자산 커버리지 그래프](screenshots/assets_test.png) |
+| ![점검 대상 커버리지 그래프](screenshots/assets_test.png) |
 
 | 트래픽 기록 | Human-in-the-loop 대화 |
 | :---: | :---: |
 | ![트래픽](screenshots/traffic.png) | ![대화](screenshots/chat.png) |
 
-| Agent 관리 | LLM 설정 |
+| 에이전트 관리 | LLM 설정 |
 | :---: | :---: |
-| ![Agent](screenshots/agents.png) | ![LLM](screenshots/llm.png) |
+| ![에이전트 관리](screenshots/agents.png) | ![LLM](screenshots/llm.png) |
 
 | 차단 승인 | 백엔드 로그 |
 | :---: | :---: |
@@ -56,16 +56,16 @@ AI 자율 침투 테스트 시스템 (Go 백엔드 + Next.js 프런트엔드)
 ## 승인 기록 상세
 
 전역 「승인 기록」, 작업 안의 「차단 승인」, 대화의 승인 카드 모두에서 펼쳐 상세를 볼 수 있습니다. 표시 구조는
-[AegisHook의 승인 상세 컴포넌트](https://github.com/RuoJi6/AegisHook/blob/main/web/src/components/CallDetail.vue)를 참고했고, ARTEX의 컴포넌트와 테마를 그대로 사용합니다:
+[AegisHook의 승인 상세 컴포넌트](https://github.com/RuoJi6/AegisHook/blob/main/web/src/components/CallDetail.vue)를 참고했고, ARTEX의 컴포넌트와 테마를 그대로 사용합니다.
 
 
-## 자산 동기화(ScopeSentry)
+## 점검 대상 동기화(ScopeSentry)
 
-[ScopeSentry](https://github.com/Autumn-27/ScopeSentry)에서 자산 데이터를 바로 동기화해 중복 수집을 줄일 수 있습니다:
+[ScopeSentry](https://github.com/Autumn-27/ScopeSentry)에서 점검 대상 데이터를 바로 동기화해 중복 수집을 줄일 수 있습니다:
 
-- 「**자산 동기화**」 페이지에 ScopeSentry 주소와 API Key를 입력해 데이터 소스를 연결합니다;
-- **프로젝트** 또는 **작업** 기준으로 동기화할 대상과 자산 유형(도메인 / 서브도메인 / IP / 포트 / 사이트 / 엔드포인트…)을 고릅니다;
-- 한 번에 가져와 회사 자산 범위로 병합하면, 그대로 ARTEX 자산 그래프에 들어가 agent 탐색에 쓰입니다.
+- 「**점검 대상 동기화**」 페이지에 ScopeSentry 주소와 API Key를 입력해 데이터 소스를 연결합니다;
+- **프로젝트** 또는 **작업** 기준으로 동기화할 대상과 점검 대상 유형(도메인 / 서브도메인 / IP / 포트 / 사이트 / 엔드포인트…)을 고릅니다;
+- 한 번에 가져와 회사 점검 대상으로 병합하면, 그대로 ARTEX 점검 대상 그래프에 들어가 에이전트 탐색에 쓰입니다.
 
 ---
 
@@ -86,7 +86,7 @@ cd ARTEX-KR
 스크립트는 Docker를 감지·자동 설치한 뒤 **① 전부 Docker** 또는 **② 로컬 컴파일 실행** 중 하나를 고르게 합니다:
 
 - **① 전부 Docker**: Postgres 비밀번호를 입력(엔터로 무작위 생성) → `.env` 자동 작성 → `docker compose up -d`.
-- **② 로컬 실행**: 데이터베이스 선택(기존 연결 / Docker로 하나 기동) → `config.json` 생성 → `go`로 프런트엔드를 내장한 단일 바이너리 컴파일 → 실행.
+- **② 로컬 실행**: 데이터베이스 선택(기존 연결 / Docker로 하나 실행) → `config.json` 생성 → `go`로 프런트엔드를 내장한 단일 바이너리 컴파일 → 실행.
 
 설치가 끝나면 **http://localhost:8787** 을 엽니다(첫 접속 시 `/setup`에서 관리자 비밀번호를 설정).
 
@@ -104,7 +104,7 @@ docker compose up -d          # autumn27/artex 이미지 + postgres 내려받기
 
 > ⚠️ **기본 Docker 이미지에는 한국어 UI가 들어 있지 않습니다.** `docker-compose.yml`이 받는 `autumn27/artex`는 **원본(업스트림) 이미지**라서 이 포크의 한국어 UI가 포함되지 않습니다. 한국어 UI로 쓰려면 이 저장소 소스로 직접 빌드한 바이너리나 이미지를 사용하세요. 이 저장소의 `Dockerfile`은 **미리 빌드해 둔 Linux 바이너리** `dist/<아키텍처>/artex`를 요구하므로, 아래 방법 4로 바이너리를 만든 뒤 `docker build -t artex:local .`로 이미지를 만들면 됩니다.
 
-이미지에는 자주 쓰는 도구(ripgrep/curl/vim/npm/nmap…)가 들어 있고, `./skills`와 `./data`는 바인드 마운트로 영속화됩니다.
+이미지에는 자주 쓰는 도구(ripgrep/curl/vim/npm/nmap…)가 들어 있고, `./skills`와 `./data`는 바인드 마운트로 계속 보존됩니다.
 
 원격 MCP는 시스템 설정에서 `http`(Streamable HTTP) 또는 `sse`(구형 SSE)를 선택할 수 있습니다.
 구형 SSE 서비스는 보통 `GET /sse`로 이벤트 스트림을 열고, 서비스가 돌려주는
@@ -160,7 +160,7 @@ go build -tags embedui -o artex.exe ./cmd/artex
 
 ```bash
 ./build.sh --release
-# 산출물: dist/artex-0.3.3-*.zip
+# 산출물: dist/artex-<버전>-*.zip
 ```
 
 UPX 자기압축 바이너리는 일부 Linux 커널, 가상화 환경 또는 보안 정책과 호환되지 않을 수 있어 기본적으로 켜지 않습니다. `ARTEX_TARGETS`로 대상을 지정할 수 있고, 대상 실행 환경이 호환된다고 확인되면 `--upx`를 명시해 바이너리를 더 줄일 수 있습니다:
@@ -169,6 +169,14 @@ UPX 자기압축 바이너리는 일부 Linux 커널, 가상화 환경 또는 �
 ARTEX_TARGETS=linux/amd64,windows/amd64 ./build.sh --release
 ./build.sh --target linux/amd64 --upx
 ```
+
+Python 스크립트로 같은 다섯 타깃을 Windows·Linux·macOS에서 그대로 빌드할 수도 있습니다:
+
+```bash
+python scripts/build-release.py --version 0.3.15
+```
+
+Python 3.10 이상, Go, Node.js가 필요하고, 처음 실행하기 전에 `web`에서 `npm ci`를 한 번 실행해야 합니다. `NEXT_PUBLIC_MOCK=0`으로 프런트엔드를 정적 빌드해 내장하고, 각 zip에 `LICENSE`와 `BUILD.json`을 넣은 뒤 실행 권한과 실행 파일의 운영체제·CPU 형식을 확인하고, 현재 환경에서 실행할 수 있는 실행 파일만 `-h`로 실행해 확인합니다. 마지막으로 `dist/SHA256SUMS`와 `dist/build-manifest.json`을 남깁니다. `--version`에는 세 자리 릴리스 버전을 넣으며, 위 `0.3.15`는 형식 예시입니다.
 
 ### 실행 환경 요구 사항
 
@@ -215,7 +223,7 @@ cd ARTEX-KR
 ```bash
 cd ARTEX-KR
 git pull                       # compose / 스크립트 갱신(선택)
-# 버전 지정: .env에 ARTEX_TAG=v0.2.0 설정. 미설정이면 latest
+# 버전 지정: .env에 ARTEX_TAG=v0.2.0 설정, 설정하지 않으면 latest
 docker compose pull artex
 docker compose up -d artex     # 새 이미지로 재시작 → schema 자동 마이그레이션
 docker image prune -f          # 이전 이미지 정리(선택)
@@ -259,7 +267,7 @@ CGO_ENABLED=0 go build -tags embedui -o artex ./cmd/artex
 **LLM**: `export ANTHROPIC_API_KEY=sk-...`(또는 `OPENAI_API_KEY`). UI의 「LLM 설정」 페이지에서 입력해도 됩니다.
 선택: `ARTEX_LLM_PROVIDER` / `ARTEX_LLM_MODEL` / `ARTEX_LLM_BASE_URL` / `ARTEX_LLM_PROXY`.
 
-**동시성**: 작업마다 work agent 수는 「시스템 설정」에서 구성합니다(기본 3).
+**동시성**: 작업마다 worker agent 수는 「시스템 설정」에서 구성합니다(기본 3).
 
 **자주 쓰는 인자**: `./start.sh -addr :8787 -proxy :8788`(`-addr` 프런트엔드+API, `-proxy` 트래픽 기록 프록시). 시작 스크립트는 인자를 그대로 `artex`에 전달합니다.
 
@@ -273,9 +281,9 @@ CGO_ENABLED=0 go build -tags embedui -o artex ./cmd/artex
 
 작업 상세의 「재검증」 탭에서 이 작업의 취약점을 페이지 단위로 골라 보고, 지난 결론과 증거를 확인하고, 재검증을 직접 시작할 수 있습니다. 시작하면 현재 탭이 유지되고 로딩 아이콘과 「재검증 중」이 표시되며, 수정이 확인되면 취약점 상태가 함께 갱신됩니다.
 
-취약점 목록의 각 행 작업 영역에서 「재검증」을 누르거나, 취약점 상세의 「취약점 재검증」 영역에서 「재검증 시작」을 눌러 수정 버전, 테스트 조건이나 제한을 선택적으로 적으면 됩니다. 시스템은 독립된 재검증 Agent 세션을 만들고, 시작해도 현재 페이지는 그대로 유지합니다. 목록의 평면 뷰, 작업별 그룹 뷰, 자산 뷰 모두 이 진입점을 지원합니다. 재검증이 도는 동안에는 로딩 아이콘과 「재검증 중」이 보이고, 확인이 필요하면 눌러 해당 세션으로 들어가며, 끝나면 「재검증」으로 돌아옵니다. 재검증을 위해 원래 스캔 작업을 다시 시작할 필요는 없습니다. 결론은 「여전히 재현됨」「수정됨」「확인할 수 없음」으로 나뉘고, 매번의 결론·증거·세션 링크는 취약점 상세에 저장됩니다.
+취약점 목록의 각 행 작업 영역에서 「재검증」을 누르거나, 취약점 상세의 「취약점 재검증」 영역에서 「재검증 시작」을 눌러 수정 버전, 테스트 조건이나 제한을 선택적으로 적으면 됩니다. 시스템은 독립된 재검증 Agent 세션을 만들고, 시작해도 현재 페이지는 그대로 유지합니다. 목록의 평면 뷰, 작업별 그룹 뷰, 점검 대상 뷰 모두 이 진입점을 지원합니다. 재검증이 도는 동안에는 로딩 아이콘과 「재검증 중」이 보이고, 확인이 필요하면 눌러 해당 세션으로 들어가며, 끝나면 「재검증」으로 돌아옵니다. 재검증을 위해 원래 스캔 작업을 다시 시작할 필요는 없습니다. 결론은 「여전히 재현됨」「수정됨」「확인할 수 없음」으로 나뉘고, 매번의 결론·증거·세션 링크는 취약점 상세에 저장됩니다.
 
-새 백엔드가 처음 시작될 때 편집 가능한 「취약점 재검증」(`retester`) Agent가 미리 만들어지며, Agent 관리에서 프롬프트·LLM·실행 예산·도구를 설정할 수 있습니다. 기본적으로 그 Agent에 연결된 LLM을 쓰고, 연결이 없으면 전역 활성 설정을 씁니다. 재검증 세션이 성공적으로 끝나고 결론이 「수정됨」이면 시스템이 취약점 처리 상태를 자동으로 「수정됨」으로 바꿉니다. 실행 중, 실패, 중지 또는 다른 결론이면 원래 상태를 유지합니다. 원본 증거와 보고서는 항상 남습니다. 상태 드롭다운에서 「수정됨」을 직접 고를 수도 있습니다. 같은 취약점을 재검증하는 중이면 이미 있는 세션을 재사용하고, 중지·실패·서비스 재시작 후에는 다시 시작할 수 있습니다.
+새 백엔드가 처음 시작될 때 편집 가능한 「취약점 재검증」(`retester`) Agent가 미리 만들어지며, 에이전트 관리에서 프롬프트·LLM·실행 예산·도구를 설정할 수 있습니다. 기본적으로 그 Agent에 연결된 LLM을 쓰고, 연결이 없으면 전역 활성 설정을 씁니다. 재검증 세션이 성공적으로 끝나고 결론이 「수정됨」이면 시스템이 취약점 처리 상태를 자동으로 「수정됨」으로 바꿉니다. 실행 중, 실패, 중지 또는 다른 결론이면 원래 상태를 유지합니다. 원본 증거와 보고서는 항상 남습니다. 상태 드롭다운에서 「수정됨」을 직접 고를 수도 있습니다. 같은 취약점을 재검증하는 중이면 이미 있는 세션을 재사용하고, 중지·실패·서비스 재시작 후에는 다시 시작할 수 있습니다.
 
 이 버전의 이력은 취약점 상세와 세션에서 확인하며, 아직 취약점 보고서 내보내기나 작업 아카이브 패키지에는 포함되지 않고 트래픽 패키지와도 자동으로 연결되지 않습니다. 데모 모드는 분명히 표시된 모의 기록만 만들고 실제 대상에 요청을 보내지 않습니다.
 
@@ -294,35 +302,35 @@ CGO_ENABLED=0 go build -tags embedui -o artex ./cmd/artex
 
 ## 시스템 기술 아키텍처
 
-ARTEX는 **LLM 멀티 agent가 이끄는 자율 침투 시스템**입니다: Go 단일 프로세스 백엔드(Next.js 프런트엔드 내장) + PostgreSQL로 구성되고, agent 기능은 [`norma`](https://github.com/Autumn-27/norma) SDK(`agentcore` / `tool` / `permission` / `harness` / `memory` / `transcript`)가 제공합니다. 핵심은 **이중 그래프 아키텍처**와, 그를 둘러싼 두 가지 자율성 메커니즘 — **worker 간 과정 수준 정보 교환**과 **planner의 여러 라운드에 걸친 공유 todolist로 안정적인 공격 경로 만들기** — 입니다.
+ARTEX는 **여러 LLM 에이전트가 협력해 자율적으로 침투 테스트를 수행하는 시스템**입니다: Go 단일 프로세스 백엔드(Next.js 프런트엔드 내장) + PostgreSQL로 구성되고, 에이전트 기능은 [`norma`](https://github.com/Autumn-27/norma) SDK(`agentcore` / `tool` / `permission` / `harness` / `memory` / `transcript`)가 제공합니다. 구조의 중심에는 **이중 그래프 아키텍처**가 있고, 그 위에서 두 가지 자율성 메커니즘이 동작합니다 — **worker 간 실행 기록 공유**와 **planner가 여러 라운드에 걸쳐 공유 todolist로 공격 단계를 순서대로 이어 가는 방식**입니다.
 
 ### 전체 계층
 
 ```mermaid
 flowchart TB
-  subgraph FE["프런트엔드 Next.js(go:embed로 단일 바이너리에 내장)"]
-    UI["대시보드 · 작업 · 자산 · 커버리지 그래프 · 트래픽 · 워크스페이스 · 시스템 설정"]
+  subgraph FE["프런트엔드 · Next.js"]
+    UI["대시보드 · 작업 · 점검 대상<br/>커버리지 그래프 · 트래픽<br/>워크스페이스 · 시스템 설정"]
   end
-  subgraph SRV["server（Go net/http）"]
-    API["REST /api/*　JWT 인증　SSE"]
-    ENG["engine 스케줄 루프"]
-    MGR["Manager　작업/엔진/store 수명주기"]
+  subgraph SRV["server · Go net/http"]
+    API["REST /api/*<br/>JWT 인증 · SSE"]
+    ENG["engine<br/>스케줄 루프"]
+    MGR["Manager<br/>수명주기 관리"]
   end
-  subgraph AG["agent（norma SDK）"]
-    GO["goals　목표 분해 + 범위 추출"]
-    PL["planner　기획자(유일한 의도 생성자)"]
-    WK["worker　실행자 ×N"]
-    MA["mainagent　Human-in-the-loop"]
+  subgraph AG["agent · norma SDK"]
+    GO["goals<br/>목표 분해 · 범위 추출"]
+    PL["planner<br/>탐색 계획 생성자"]
+    WK["worker<br/>실행자 ×N"]
+    MA["mainagent<br/>Human-in-the-loop"]
   end
   subgraph DB["PostgreSQL"]
-    AGRAPH["자산 그래프　assets / companies / task_scope"]
-    EGRAPH["탐색 그래프　exploration_nodes / anchors / activity"]
+    AGRAPH["점검 대상 그래프<br/>assets · companies<br/>task_scope"]
+    EGRAPH["탐색 그래프<br/>exploration_nodes<br/>anchors · activity"]
   end
   subgraph SUB["지원 서브시스템"]
-    PROXY["트래픽 기록 프록시　MITM + CA 흔적"]
-    GUARD["guard / intercept　도구 승인 게이트"]
-    ENR["enrich　DNS / HTTP 비동기 보강"]
-    EXT["MCP · skills · memory · report"]
+    PROXY["트래픽 기록 프록시<br/>MITM + CA 흔적"]
+    GUARD["guard / intercept<br/>도구 승인 게이트"]
+    ENR["enrich<br/>DNS / HTTP 보강"]
+    EXT["MCP · skills<br/>memory · report"]
   end
 
   UI -->|HTTP| API
@@ -335,7 +343,7 @@ flowchart TB
   WK --> DB
   MA --> DB
   GO --> DB
-  WK -->|"Bash / HTTP 전 과정 흔적"| PROXY
+  WK -->|"Bash / HTTP 흔적"| PROXY
   WK --> GUARD
   WK --> ENR
   PL -.-> EXT
@@ -345,36 +353,36 @@ flowchart TB
 
 | 계층 | 역할 |
 | --- | --- |
-| **프런트엔드** | Next.js 정적 내보내기를 `go:embed`로 단일 바이너리에 내장. 작업/자산/탐색 경로/커버리지 그래프 시각화와 Human-in-the-loop 대화 |
+| **프런트엔드** | Next.js 정적 내보내기를 `go:embed`로 단일 바이너리에 내장. 작업/점검 대상/탐색 경로/커버리지 그래프 시각화와 Human-in-the-loop 대화 |
 | **server** | `net/http` 라우팅 + JWT 인증 + SSE. `Manager`가 작업·엔진·DB store 수명주기를 관리 |
-| **engine** | 작업마다 `plannerLoop` 하나 + worker goroutine N개. 의도 수령, 타임아웃/일시정지/drain |
+| **engine** | 작업마다 `plannerLoop` 하나 + worker goroutine N개. 탐색 계획 전달, 타임아웃/일시정지/drain |
 | **agent** | goals / planner / worker / mainagent. `ToolSet`이 이중 그래프를 LLM 도구로 노출 |
 | **db** | 이중 그래프를 Postgres(pgx)에 저장. schema는 `go:embed`를 통해 시작할 때마다 멱등하게 생성 |
 | **지원** | 기록형 MITM 프록시, 승인 게이트, 비동기 보강, MCP/스킬/기억/보고서 |
 
-### 이중 그래프 아키텍처: 탐색 그래프 + 자산 그래프
+### 이중 그래프 아키텍처: 탐색 그래프 + 점검 대상 그래프
 
 시스템은 「**목표가 무엇인가**」와 「**어디까지 테스트했는가**」를 서로 독립적이면서 앵커로 연결된 두 그래프로 나눕니다:
 
-- **자산 그래프(Asset Graph, 전역 공유)**: 작업을 가로질러 하나뿐인 자산 진실 저장소입니다. 노드는 `root_domain / subdomain / ip / service / app / endpoint`이고 회사에 귀속됩니다. 도메인→서브도메인→서비스→엔드포인트의 부모-자식 관계와 중복 제거 key는 모두 프로그램이 계산하며, agent는 원본 정보만 제출합니다.
-- **탐색 그래프(Exploration Graph, 작업마다 독립)**: 한 작업의 "생각과 진행" 과정입니다. 노드는 `goal(목표) / intent(의도) / fact(사실) / finding(취약점) / hint(힌트)`이고, `spawns / derived_from / yields / proves` 같은 간선으로 **혈연 체인**을 이뤄 "어느 방향이 어떤 사실에서 파생되어 무엇을 만들어 냈는가"에 답합니다.
-- **두 그래프는 앵커로 연결됩니다**: `exploration_anchors(node_id, asset_id)`가 의도/사실/취약점을 구체적인 자산에 고정합니다. 그래서 "탐색 방향"에서 어떤 자산을 공략했는지 볼 수 있고, "어떤 자산"에서 이 작업 중 어떤 의도로 테스트했고 어떤 사실을 얻었는지 역으로 조회할 수 있습니다. 이 구조가 **자산 테스트 커버리지**와 **자산 커버리지 그래프**(범위 안 자산 + 테스트 완료 하이라이트)를 떠받칩니다.
+- **점검 대상 그래프(Asset Graph, 전역 공유)**: 모든 작업이 함께 쓰는 공통 점검 대상 저장소입니다. 노드는 `root_domain / subdomain / ip / service / app / endpoint`이고 회사에 귀속됩니다. 도메인→서브도메인→서비스→엔드포인트의 부모-자식 관계와 중복 제거 key는 모두 프로그램이 계산하며, 에이전트는 원본 정보만 제출합니다.
+- **탐색 그래프(Exploration Graph, 작업마다 독립)**: 한 작업의 "생각과 진행" 과정입니다. 노드는 `goal(목표) / intent(탐색 계획) / fact(사실) / finding(취약점) / hint(힌트)`이고, `spawns / derived_from / yields / proves` 같은 간선으로 **연결 관계**를 이뤄 "어느 방향이 어떤 사실에서 파생되어 무엇을 만들어 냈는가"에 답합니다.
+- **두 그래프는 앵커로 연결됩니다**: `exploration_anchors(node_id, asset_id)`가 탐색 계획/사실/취약점을 구체적인 점검 대상에 고정합니다. 그래서 "탐색 방향"에서 어떤 점검 대상을 공략했는지 볼 수 있고, "어떤 점검 대상"에서 이 작업 중 어떤 탐색 계획으로 테스트했고 어떤 사실을 얻었는지 역으로 조회할 수 있습니다. 이 구조가 **점검 대상 테스트 커버리지**와 **점검 대상 커버리지 그래프**(범위 안 점검 대상 + 테스트 완료 하이라이트)를 지원합니다.
 
 ```mermaid
 flowchart LR
-  subgraph EG["탐색 그래프(작업마다 독립 · 진행 체인)"]
+  subgraph EG["탐색 그래프 · 작업마다 독립"]
     direction TB
     G["goal 목표"]
-    I1["intent 의도 A"]
+    I1["intent 탐색 계획 A"]
     F1["fact 사실"]
-    I2["intent 의도 B"]
+    I2["intent 탐색 계획 B"]
     FD["finding 취약점"]
     G -->|spawns| I1
     I1 -->|yields| F1
     F1 -->|derived_from| I2
     I2 -->|proves| FD
   end
-  subgraph AG["자산 그래프(전역 공유 · 진실 저장소)"]
+  subgraph AG["점검 대상 그래프 · 전역 공유"]
     direction TB
     RD["root_domain"]
     SD["subdomain"]
@@ -388,77 +396,77 @@ flowchart LR
   FD -. anchor .-> EP
 ```
 
-> 역할 분담: **planner**는 탐색 그래프의 상황을 읽고 목표를 판단하며, 아직 덮지 않은 새 방향이 있을 때만 **의도**를 frontier에 넣습니다. **worker**는 **의도 하나**를 받아 실제 도구로 실행하고, 새 자산/사실/취약점을 두 그래프에 기록한 뒤 멈춥니다. 자산 그래프는 공유 진실이고, 탐색 그래프는 작업마다의 진행 체인입니다.
+> 역할 분담: **planner**는 탐색 그래프의 상황을 읽고 목표를 판단하며, 아직 덮지 않은 새 방향이 있을 때만 **탐색 계획**을 frontier에 추가합니다. **worker**는 **탐색 계획 하나**를 전달받아 실제 도구로 실행하고, 새 점검 대상/사실/취약점을 두 그래프에 기록한 뒤 멈춥니다. 점검 대상 그래프는 모두가 공유하는 저장소이고, 탐색 그래프는 작업마다 이어지는 진행 체인입니다.
 
-### 엔진과 의도 수명주기(한 번의 탐색이 닫히는 고리)
+### 엔진과 탐색 계획 수명주기(한 번의 탐색이 닫히는 고리)
 
-엔진은 **이벤트 기반** 폐루프입니다: 그래프가 바뀌면 planner를 깨우고, planner가 의도를 내보내고, worker가 의도를 받아 실행하고 되쓰면, 그 되쓰기가 다음 라운드를 다시 깨웁니다 — 목표가 증명될 때(`prove_goal`)까지 이어집니다.
+엔진은 그래프 변경을 신호로 다음 탐색을 수행합니다: 그래프가 바뀌면 planner가 깨어나 목표와 현재 상황을 다시 판단하고 탐색 계획을 추가하며, worker가 계획을 전달받아 실행한 뒤 결과를 기록합니다. 그 기록이 다시 다음 라운드를 시작하고, 목표가 증명될 때(`prove_goal`)까지 이어집니다.
 
 ```mermaid
 sequenceDiagram
   autonumber
-  participant EV as 그래프 변경 debounce
+  participant EV as 그래프 변경 감지
   participant P as planner
-  participant FR as frontier 의도 큐
+  participant FR as 탐색 계획 큐
   participant W as worker
   participant PX as 기록 프록시
-  participant DB as 이중 그래프 + activity
+  participant DB as 이중 그래프
 
-  EV-->>P: 깨우기
-  P->>DB: 상황 읽기(graph_overview 프리페치 + coverage/scope)
-  P->>FR: 의도 0..N개 배출(asset_ids 포함)
-  Note over P,FR: 대부분의 깨우기에서는 0개를 배출합니다 — 새 방향이 없으면 끝
-  W->>FR: claimNext로 의도 하나 수령
-  W->>DB: 의도의 asset_ids에 해당하는 원본 자산을 초기 정보로 조회
-  W->>PX: 실제 도구 실행(Kali / Bash / HTTP)
-  PX-->>W: 응답(전 과정 흔적 + CA 검증)
-  W->>DB: fact / asset / finding 기록 + 단계마다 activity
+  EV-->>P: 변경 알림
+  P->>DB: 상황 읽기
+  P->>FR: 탐색 계획 0..N개 추가
+  Note over P,FR: 대부분의 라운드는 0개 추가(새 방향 없음)
+  W->>FR: claimNext로 계획 하나 전달받음
+  W->>DB: 점검 대상(asset_ids) 조회
+  W->>PX: 도구 실행(Kali / Bash / HTTP)
+  PX-->>W: 응답(흔적 + CA 검증)
+  W->>DB: fact / asset / finding 기록
   DB-->>EV: 그래프 변경
-  EV-->>P: 다시 깨우기(폐루프)
+  EV-->>P: 다시 알림
 ```
 
-### worker 간 과정 수준 정보 교환
+### worker 간 실행 기록 공유
 
-깊은 탐색에서는 값진 관찰(어떤 오류, 어떤 응답 조각, 어떤 숨은 파라미터)이 한 worker의 **실행 과정**에서 나오지만, 꼭 정식 fact로 기록되지는 않습니다. 중복 작업을 피하고 체인 위의 worker가 서로의 어깨에 올라서게 하려고, worker는 **다른 work의 과정을 검색**하는 능력을 갖습니다:
+깊은 탐색에서는 값진 관찰(어떤 오류, 어떤 응답 조각, 어떤 숨은 파라미터)이 한 worker의 **실행 과정**에서 나오지만, 늘 정식 fact로 기록되지는 않습니다. 중복 작업을 피하고 뒤따르는 worker가 앞선 worker의 결과를 이어받을 수 있도록, worker는 **다른 work의 실행 과정을 검색**할 수 있습니다:
 
-- `search_all_worker_traces(q)`: **이 작업의 다른 work 실행 과정**에서 키워드로 검색합니다(자기 의도의 단계는 자동 제외). 검색 결과에는 `intent_id`가 붙습니다;
+- `search_all_worker_traces(q)`: **이 작업의 다른 work 실행 과정**에서 키워드로 검색합니다(자기 탐색 계획의 단계는 자동 제외). 검색 결과에는 `intent_id`가 붙습니다;
 - `list_worker_traces` / `get_worker_trace(intent_id, step_ids=[…])`: 어떤 work가 돌았는지 먼저 보고, 특정 work의 특정 단계 내용을 통째로 받아 세부를 교환합니다.
 
-이렇게 하면 탐색 그래프에 아직 대응하는 fact가 없어도 뒤따르는 worker가 남의 과정에서 나온 관찰을 재사용할 수 있습니다 — **정보가 worker 사이에서 "실행 과정" 단위로 흐르되**, 경계는 그대로입니다(각 worker는 여전히 자기 의도 하나만 수행).
+이렇게 하면 탐색 그래프에 아직 대응하는 fact가 없어도 뒤따르는 worker가 남의 과정에서 나온 관찰을 재사용할 수 있습니다 — **정보가 worker 사이에서 "실행 과정" 단위로 흐르되**, 경계는 그대로입니다(각 worker는 여전히 자기 탐색 계획 하나만 수행).
 
 ```mermaid
 flowchart LR
-  WA["worker A(의도 #12)"] -->|"단계마다 activity"| ACT[("탐색 그래프 · activity 과정 저장소")]
-  WB["worker B(의도 #34)"] -->|"단계마다 activity"| ACT
-  WC["worker C(의도 #56)"] ==>|"1) search_all_worker_traces(q)"| ACT
-  ACT ==>|"2) A/B의 단계 적중(자기 것 제외)"| WC
+  WA["worker A<br/>탐색 계획 #12"] -->|"단계마다 activity"| ACT[("탐색 그래프<br/>activity 저장소")]
+  WB["worker B<br/>탐색 계획 #34"] -->|"단계마다 activity"| ACT
+  WC["worker C<br/>탐색 계획 #56"] ==>|"1) search_all_worker_traces(q)"| ACT
+  ACT ==>|"2) A/B 단계 적중(자기 것 제외)"| WC
   WC ==>|"3) get_worker_trace(id, step_ids)"| ACT
   ACT ==>|"4) 전체 과정 내용 반환"| WC
 ```
 
-### planner의 여러 라운드에 걸친 공유 todolist → 안정적인 공격 경로
+### planner의 여러 라운드에 걸친 공유 todolist → 안정적인 공격 단계
 
-실제 공격 체인은 대개 **앞뒤 의존이 있는 여러 단계의 연속**(예: 주입점 발견 → 자격 증명 확보 → 횡적 이동 → 권한 상승)이라, 한 번에 전부 병렬로 내보내면 엉킵니다. 그래서 planner는 **작업 단위로 유지되고 깨우기를 넘어 공유되는 계획 할 일 목록(todolist)** 을 들고 있습니다:
+실제 공격은 대개 **앞 단계 결과에 의존하는 여러 단계의 연속**(예: 주입점 발견 → 자격 증명 확보 → 횡적 이동 → 권한 상승)이라, 한 번에 모두 병렬로 진행하면 순서가 엉킵니다. 그래서 planner는 **작업 단위로 유지되어 라운드를 넘어 공유되는 계획 할 일 목록(todolist)** 을 들고 있습니다:
 
-- planner는 이벤트 기반이라 그래프가 바뀌면 깨워지지만, **깨워질 때마다 완전히 새 세션**입니다. 공유 todolist가 있으므로 직렬 이용 체인을 **한 번 기록해 두고**, 이후 여러 라운드에 걸쳐 **의존 순서대로 의도를 하나씩 내보냅니다**. 체인 전체를 한 라운드에 몰아서 펼치지 않습니다;
-- 매 라운드에는 「앞 단계가 끝났고 의존하는 fact가 이미 있는」 다음 단계에만 의도를 내보내고, 진행에 맞춰 목록을 갱신합니다(fact로 충족된 단계는 완료로 표시).
+- planner는 그래프가 바뀔 때마다 다시 호출되지만, **호출될 때마다 완전히 새 세션**입니다. 공유 todolist가 있으므로 **순서대로 수행할 공격 단계를 한 번 기록해 두고**, 이후 여러 라운드에 걸쳐 **의존 순서대로 탐색 계획을 하나씩 추가합니다**. 체인 전체를 한 라운드에 몰아서 펼치지 않습니다;
+- 매 라운드에는 「앞 단계가 끝났고 의존하는 fact가 이미 있는」 다음 단계에만 탐색 계획을 추가하고, 진행에 맞춰 목록을 갱신합니다(fact로 충족된 단계는 완료로 표시).
 
 ```mermaid
 flowchart TB
-  subgraph TODO["공유 todolist(작업 단위 유지 · 깨우기를 넘어 상주)"]
+  subgraph TODO["공유 todolist"]
     direction LR
-    T1["1 주입점　[완료]"]
-    T2["2 자격 증명 확보　[진행 중]"]
-    T3["3 횡적 이동　[선행 대기]"]
-    T4["4 권한 상승　[선행 대기]"]
+    T1["1 주입점<br/>[완료]"]
+    T2["2 자격 증명 확보<br/>[진행 중]"]
+    T3["3 횡적 이동<br/>[선행 대기]"]
+    T4["4 권한 상승<br/>[선행 대기]"]
     T1 -.선행 충족.-> T2 -.-> T3 -.-> T4
   end
-  R1["1라운드 깨우기　의도① 배출"] --> T1
-  R2["2라운드(①이 fact 산출)　의도② 배출"] --> T2
-  R3["3라운드(②가 fact 산출)　의도③ 배출"] --> T3
+  R1["1라운드 시작<br/>탐색 계획 ① 추가"] --> T1
+  R2["2라운드(① fact 산출)<br/>탐색 계획 ② 추가"] --> T2
+  R3["3라운드(② fact 산출)<br/>탐색 계획 ③ 추가"] --> T3
 ```
 
-그래서 공격 체인은 "이벤트 기반 + 무상태 세션" 환경에서도 **안정적으로 나아가고, 중복되지 않고, 순서가 틀어지지 않습니다** — 이것이 ARTEX가 여러 단계의 이용 체인을 자율적으로 끝까지 가는 핵심입니다.
+그래서 여러 단계로 이어지는 공격은 "이벤트 기반 + 무상태 세션" 환경에서도 **순서를 지키고 중복 없이 안정적으로 진행됩니다** — 이것이 ARTEX가 긴 공격 단계를 자율적으로 끝까지 수행하는 핵심입니다.
 
 ---
 
@@ -497,7 +505,7 @@ https://github.com/oritera/Cairn
 
 ### 금지 사항
 
-- **이 도구로 어떤 웹사이트, 온라인 서비스, 네트워크에 연결된 시스템에도 스캔·탐지·이용·공격을 해서는 안 됩니다**(권한을 받았는지, 자기 자산인지와 무관합니다);
+- **이 도구로 어떤 웹사이트, 온라인 서비스, 네트워크에 연결된 시스템에도 스캔·탐지·이용·공격을 해서는 안 됩니다**(권한을 받았는지, 본인 소유인지와 무관합니다);
 - 이 도구를 어떤 실제 침투 테스트, 공방 대항, 운영 환경에도 써서는 안 됩니다;
 - 이 도구를 불법 침입, 데이터 탈취, 협박(랜섬), 서비스 거부 또는 어떤 파괴적·범죄적 활동에도 써서는 안 됩니다;
 - 이 도구로 거주 국가/지역의 법률과 규정을 위반하는 행위를 해서는 안 됩니다.

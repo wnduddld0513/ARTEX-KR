@@ -1,6 +1,6 @@
 // Mock 라우팅: (method, path)를 lib/mock/data의 정적 데이터로 매핑한다.
 // 매칭되지 않으면 안전한 기본값([] / {} / {ok:true})을 돌려주어 어떤 페이지도 깨지지 않게 한다.
-// NEXT_PUBLIC_MOCK=1일 때만 api.ts의 http()를 거쳐 이쪽으로 단락된다.
+// NEXT_PUBLIC_MOCK=1일 때만 api.ts의 http()를 거쳐 이 모듈로 넘어온다.
 
 import {
   classifyCompanyScopeLine,
@@ -54,7 +54,7 @@ const mockRetestMessages: Record<number, Activity[]> = {};
 // ── 연결된 트래픽 증거(finding traffic) ─────────────────────────────────────────────
 // 백엔드는 요청/응답 스냅샷을 evidence 테이블에 따로 저장하고, 프런트 상세 페이지는 FindingTrafficPanel로 보여 준다.
 // demo에서는 일부 취약점에 바인딩을 미리 넣어 두고, 스냅샷은 mock 캡처(data.traffic.exchanges)를 그대로 참조한다.
-// 나머지 취약점은 빈 바인딩을 돌려준다. 이 라우트가 없으면 상세 페이지가 빈 객체를 읽고 bindings.length에 접근하다 페이지 전체가 깨진다.
+// 나머지 취약점은 빈 바인딩을 돌려준다. 이 라우트가 없으면 상세 페이지가 빈 객체를 읽고 bindings.length에 접근하는 바람에 페이지 전체가 깨진다.
 const mockExchangeById = new Map((D.traffic.exchanges ?? []).map((exchange) => [exchange.id, exchange]));
 
 interface MockBindingSeed {
@@ -275,7 +275,7 @@ function mockArchiveTask(taskID: string): MockTaskArchive {
           (archive.state === "archive_queued" || archive.state === "archiving"),
       ),
   );
-  if (dependent) throw new Error(`미아카이브 작업 #${dependent.id}에서 직접 상속되어 지금은 아카이브할 수 없습니다`);
+  if (dependent) throw new Error(`아직 아카이브하지 않은 작업 #${dependent.id}이(가) 이 작업을 이어받은 상태라 지금은 아카이브할 수 없습니다`);
 
   const numericTaskID = mockArchiveTaskID(taskID);
   const assetIDs = mockAssets.filter((asset) => asset.task_ids.includes(numericTaskID)).map((asset) => asset.id);
@@ -396,7 +396,7 @@ function mockDeleteArchive(archive: MockTaskArchive): void {
   const dependent = mockTaskArchives.find(
     (candidate) => candidate.id !== archive.id && candidate.source_task_ids.includes(archive.task_id),
   );
-  if (dependent) throw new Error(`아카이브가 아직 작업 #${dependent.task_id}에 의존하고 있어 영구 삭제할 수 없습니다`);
+  if (dependent) throw new Error(`이 작업을 이어받은 작업 #${dependent.task_id}의 아카이브가 남아 있어 영구 삭제할 수 없습니다`);
   archive.state = "delete_queued";
   archive.phase = "영구 삭제 대기";
   archive.progress = 0;
@@ -461,8 +461,8 @@ function mockAssetMatchesDSL(asset: Asset, dsl: string): boolean {
   return query.split(/\s+/).every((term) => haystack.includes(term));
 }
 
-// mockFilterFindings는 발견 페이지의 공통 필터(심각도/상태/유형/작업/키워드)를 적용한다. 자산
-// 하위 트리 필터는 mockApplyAssetScope가 따로 처리한다 —— 백엔드 FindingFilter.where()의 분담과 동일.
+// mockFilterFindings는 발견 페이지의 공통 필터(심각도/상태/유형/작업/키워드)를 적용한다. 점검 대상
+// 하위 트리 필터는 mockApplyAssetScope가 따로 처리한다 —— 백엔드 FindingFilter.where()의 역할 구분과 같다.
 function mockFilterFindings(q: URLSearchParams): (typeof mockFindings)[number][] {
   let list = mockFindings.filter((finding) => mockFindingMatchesQuery(finding, q.get("q")));
   const severity = q.get("severity");
@@ -487,8 +487,8 @@ function mockFindingMatchesQuery(finding: (typeof mockFindings)[number], query: 
   );
 }
 
-// ── 「자산별」 뷰 ────────────────────────────────────────────────────────────
-// 백엔드는 db/finding_assets.go에서 트리를 만든다(발견이 있는 자산만 담고 조상을 단계적으로 채우며, 카운트는
+// ── 「점검 대상별」 뷰 ────────────────────────────────────────────────────────────
+// 백엔드는 db/finding_assets.go에서 트리를 만든다(발견이 있는 점검 대상만 담고 조상을 단계적으로 채우며, 카운트는
 // 조상 체인에서 중복을 제거해 누적). 여기서는 같은 부모-자식 우선순위로 메모리에서 재현해 demo 모드의 계층,
 // 카운트, 하위 트리 필터를 실제 백엔드와 일치시킨다.
 
@@ -536,14 +536,14 @@ interface MockAssetTreeNode {
   last_found_at: string;
 }
 
-// mockBuildAssetTree는 (다른 조건으로 이미 필터링된) 발견 묶음에서 자산 트리를 만든다.
+// mockBuildAssetTree는 (다른 조건으로 이미 필터링된) 발견 묶음에서 점검 대상 트리를 만든다.
 function mockBuildAssetTree(list: (typeof mockFindings)[number][]): MockAssetTreeNode[] {
   const hit = new Set<number>();
   for (const finding of list) {
     for (const ref of finding.assets ?? []) hit.add(Number(ref.id));
   }
 
-  // 적중한 자산을 모으고 조상을 단계적으로 보충(호스트 service / 서브도메인 / IP / 루트 도메인).
+  // 적중한 점검 대상을 모으고 조상을 단계적으로 채운다(호스트 service / 서브도메인 / IP / 루트 도메인).
   const picked = new Map<number, (typeof mockAssets)[number]>();
   for (const asset of mockAssets) if (hit.has(asset.id)) picked.set(asset.id, asset);
   for (let round = 0; round < 4; round++) {
@@ -625,7 +625,7 @@ function mockBuildAssetTree(list: (typeof mockFindings)[number][]): MockAssetTre
     }
   }
 
-  // 기업 계층: 실제 소속이 있는 최상위 자산(루트 도메인 / IP / 애플리케이션)에만 보충하고, 소속이 없으면 자기 자신이 최상위.
+  // 기업 계층: 실제 소속이 있는 최상위 점검 대상(루트 도메인 / IP / 애플리케이션)에만 채우고, 소속이 없으면 자기 자신이 최상위.
   for (const node of [...nodes.values()]) {
     if (node.parent || !node.company_id) continue;
     if (!["root_domain", "ip", "app"].includes(node.kind)) continue;
@@ -651,11 +651,11 @@ function mockBuildAssetTree(list: (typeof mockFindings)[number][]): MockAssetTre
     parentOf.set(node.key, companyKey);
   }
 
-  // 카운트: 발견 하나가 각 자산의 조상 체인을 따라 올라가며 중복 제거한 key 집합을 모은 뒤 하나씩 +1.
+  // 카운트: 발견 하나가 각 점검 대상의 조상 체인을 따라 올라가며 중복 제거한 key 집합을 모은 뒤 하나씩 +1.
   const unassigned: MockAssetTreeNode = {
     key: UNASSIGNED_ASSET,
     kind: "none",
-    label: "연결된 자산 없음",
+    label: "연결된 점검 대상 없음",
     self: 0,
     total: 0,
     critical: 0,
@@ -699,8 +699,8 @@ function mockBuildAssetTree(list: (typeof mockFindings)[number][]): MockAssetTre
   return out;
 }
 
-// mockAssetScopeIds는 자산 트리 노드 key를 전체 하위 트리의 자산 id 집합으로 펼친다(백엔드
-// applyAssetScope와 같은 의미). miss=true는 해당 노드가 현재 필터에 없다는 뜻 → 결과는 항상 빔.
+// mockAssetScopeIds는 점검 대상 트리 노드 key를 전체 하위 트리의 점검 대상 id 집합으로 펼친다(백엔드
+// applyAssetScope와 같은 의미). miss=true는 해당 노드가 현재 필터에 없다는 뜻 → 결과는 항상 비어 있다.
 function mockAssetScopeIds(
   scope: string,
   list: (typeof mockFindings)[number][],
@@ -730,7 +730,7 @@ function mockAssetScopeIds(
 }
 
 // mockApplyAssetScope는 asset_scope로 발견 묶음을 좁힌다. 「미연결」은 assets가 비어 있는 경우와
-// 삭제된 자산을 가리키는 발견을 함께 모으며, 트리의 그 버킷과 기준이 같다.
+// 삭제된 점검 대상을 가리키는 발견을 함께 모으며, 트리에서 같은 묶음을 가르는 기준과 같다.
 function mockApplyAssetScope(
   list: (typeof mockFindings)[number][],
   scope: string | null,
@@ -867,7 +867,7 @@ let nextMockWorkerMessageActivitySeq = mockActivity.reduce((maximum, item) => Ma
 
 function controlMockIntent(id: string, action: "pause" | "resume"): MockIntentControlResult {
   const intent = mockIntents.find((item) => item.id === id);
-  if (!intent) return { ok: false, error: "의도를 찾을 수 없습니다" };
+  if (!intent) return { ok: false, error: "탐색 계획을 찾을 수 없습니다" };
   const requiredState = action === "pause" ? "running" : "paused";
   if (intent.inherited || intent.state !== requiredState) {
     return { ok: false, state: intent.state, error: "Worker 상태가 변경되었습니다" };
@@ -897,9 +897,9 @@ function sendMockWorkerMessage(
     };
   }
   const intent = mockIntents.find((item) => item.id === id);
-  if (!intent) return { ok: false, error: "의도를 찾을 수 없습니다" };
+  if (!intent) return { ok: false, error: "탐색 계획을 찾을 수 없습니다" };
   if (intent.inherited || intent.state !== "paused") {
-    return { ok: false, state: intent.state, error: "일시중지된 Worker에만 메시지를 보낼 수 있습니다. 먼저 일시중지하세요" };
+    return { ok: false, state: intent.state, error: "일시중지된 Worker에만 메시지를 보낼 수 있습니다. 먼저 일시중지하세요." };
   }
   if (!normalizedMessage) return { ok: false, state: intent.state, error: "메시지는 비워 둘 수 없습니다" };
   if (Array.from(normalizedMessage).length > 4000) {
@@ -1029,7 +1029,7 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
         label:
           asset.type === "endpoint"
             ? `${asset.method || "GET"} ${asset.url}`
-            : asset.app_name || asset.url || asset.domain || asset.ip || asset.bundle_id || `자산 #${asset.id}`,
+            : asset.app_name || asset.url || asset.domain || asset.ip || asset.bundle_id || `점검 대상 #${asset.id}`,
         description: [asset.type, asset.page_title, asset.service_name, asset.bundle_id, asset.ip]
           .filter(Boolean)
           .join(" · "),
@@ -1214,7 +1214,7 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
       const company = mockCompanies.find((candidate) => candidate.id === asset.company_id);
       setMockTaskAssetSource(id, asset.id, {
         task_source: "company",
-        task_source_summary: `작업 생성 시 연결 기업: ${company?.name ?? `#${asset.company_id}`}`,
+        task_source_summary: `작업을 만들 때 연결한 기업: ${company?.name ?? `#${asset.company_id}`}`,
         task_source_node_id: undefined,
       });
     }
@@ -1475,7 +1475,7 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
           },
         };
       }
-      // 가삭제(기본): deleted로 표시 + 삭제 사유 기록, 노드는 보존.
+      // 임시 삭제(기본): deleted로 표시하고 삭제 사유를 기록하며, 노드는 남긴다.
       intent.state = "deleted";
       intent.delete_reason = String(b.reason ?? "");
       return { id: numId, state: "deleted" };
@@ -1514,7 +1514,7 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
     return { active: mockActiveTask };
   }
 
-  // ── 커버리지 / 커버리지 그래프 / 자산 연계(작업 차원)──
+  // ── 커버리지 / 커버리지 그래프 / 점검 대상 연계(작업 차원)──
   if (seg[0] === "tasks" && seg[2] === "coverage" && seg.length === 3) return D.coverage;
   if (seg[0] === "tasks" && seg[2] === "coverage-graph") return D.coverageGraph;
   if (seg[0] === "tasks" && seg[2] === "asset-refs") return D.assetRefsFor(Number(q.get("asset_id") ?? 0));
@@ -1655,7 +1655,7 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
       const rules: CompanyScopeRule[] = b.scope.map((candidate, index) => {
         if (typeof candidate === "string") {
           const issue = classifyCompanyScopeLine(candidate, index + 1);
-          if (!issue.rule || issue.error) throw new Error(`제 ${index + 1}번째 범위가 유효하지 않습니다: ${issue.error ?? "인식할 수 없음"}`);
+          if (!issue.rule || issue.error) throw new Error(`${index + 1}번째 범위가 유효하지 않습니다: ${issue.error ?? "해석할 수 없음"}`);
           return issue.rule;
         }
         const item = candidate as { kind?: unknown; value?: unknown };
@@ -1664,8 +1664,8 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
           item?.kind && isCompanyScopeKind(item.kind)
             ? { kind: item.kind, value }
             : classifyCompanyScopeLine(value, index + 1).rule;
-        const error = rule ? companyScopeRuleError(rule) : "인식할 수 없음";
-        if (!rule || error) throw new Error(`제 ${index + 1}번째 범위가 유효하지 않습니다: ${error}`);
+        const error = rule ? companyScopeRuleError(rule) : "해석할 수 없음";
+        if (!rule || error) throw new Error(`${index + 1}번째 범위가 유효하지 않습니다: ${error}`);
         return rule;
       });
       const mutation: TaskAssetScopeMutation = {
@@ -1686,7 +1686,7 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
           task_id: numericTaskID,
           kind: rule.kind === "domain" ? "root_domain" : rule.kind,
           source: "manual",
-          reason: "사용자가 자산 테스트 페이지에서 수동 추가",
+          reason: "사용자가 점검 대상 테스트 페이지에서 직접 추가",
         };
         if (rule.kind === "domain") scope.domain = normalized;
         else if (rule.kind === "ip") scope.net = `${normalized}/${normalized.includes(":") ? 128 : 32}`;
@@ -1726,7 +1726,7 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
         }
         setMockTaskAssetSource(seg[1], asset.id, {
           task_source: "manual",
-          task_source_summary: "사용자가 자산 테스트 페이지에서 수동 추가",
+          task_source_summary: "사용자가 점검 대상 테스트 페이지에서 직접 추가",
           task_source_node_id: undefined,
         });
       }
@@ -1735,9 +1735,9 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
     }
     const ids = [...new Set(Array.isArray(b.asset_ids) ? b.asset_ids.map(Number) : [])];
     const sourceSummary = String(b.source_summary ?? "").trim();
-    if (ids.length === 0 || ids.length > 100 || !sourceSummary) throw new Error("자산을 선택하고 출처 설명을 입력하세요");
+    if (ids.length === 0 || ids.length > 100 || !sourceSummary) throw new Error("점검 대상을 선택하고 출처 설명을 입력하세요");
     const requestedAssets = ids.map((id) => mockAssets.find((asset) => asset.id === id));
-    if (requestedAssets.some((asset) => !asset)) throw new Error("자산을 찾을 수 없습니다");
+    if (requestedAssets.some((asset) => !asset)) throw new Error("점검 대상을 찾을 수 없습니다");
     const mutation: TaskAssetMutation = { requested: ids.length, attached: 0, existing: 0 };
     for (const asset of requestedAssets) {
       if (!asset) continue;
@@ -1757,8 +1757,8 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
   if (seg[0] === "tasks" && seg[2] === "assets" && seg.length === 4 && m === "DELETE") {
     const numericTaskID = mockTaskAssetID(seg[1]);
     const asset = mockAssets.find((item) => item.id === Number(seg[3]));
-    if (numericTaskID === undefined || !asset) throw new Error("작업 또는 자산을 찾을 수 없습니다");
-    if (!asset.task_ids.includes(numericTaskID)) throw new Error("자산이 현재 작업에 연결되어 있지 않습니다");
+    if (numericTaskID === undefined || !asset) throw new Error("작업 또는 점검 대상을 찾을 수 없습니다");
+    if (!asset.task_ids.includes(numericTaskID)) throw new Error("점검 대상이 현재 작업에 연결되어 있지 않습니다");
     asset.task_ids = asset.task_ids.filter((id) => id !== numericTaskID);
     deleteMockTaskAssetSources(seg[1], asset.id);
     return { detached: asset.id };
@@ -1767,11 +1767,11 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
     let mappings: Array<{ intentID: string; assetID: number; summary: string }> = [];
     if (seg[1] === "t-acme-web") {
       mappings = [
-        { intentID: "i3", assetID: 6, summary: "관리자 기능 열거 의도는 선행 서브도메인 발견에서 선택" },
-        { intentID: "i5", assetID: 3, summary: "주문 API 테스트 의도는 API 작업 목표에서 선택" },
+        { intentID: "i3", assetID: 6, summary: "관리자 기능 열거 탐색 계획은 앞선 서브도메인 발견에서 선택" },
+        { intentID: "i5", assetID: 3, summary: "주문 API 테스트 탐색 계획은 API 작업 목표에서 선택" },
       ];
     } else if (seg[1] === "t-acme-api") {
-      mappings = [{ intentID: "i5", assetID: 3, summary: "주문 API 테스트 의도는 API 작업 목표에서 선택" }];
+      mappings = [{ intentID: "i5", assetID: 3, summary: "주문 API 테스트 탐색 계획은 API 작업 목표에서 선택" }];
     }
     const sourceTaskID = mockTaskAssetID(seg[1]) ?? 0;
     const assets: IntentAsset[] = mappings.flatMap((mapping) => {
@@ -2023,7 +2023,7 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
         response: mockEvidencePreview(body.resp),
       };
     }
-    // 패킷 본문 페이지네이션: GET /traffic/{binding_id}/body —— demo 본문은 자르지 않고 빈 다음 페이지를 바로 반환.
+    // 패킷 본문 페이지네이션: GET /traffic/{binding_id}/body —— demo 본문은 자르지 않고 빈 다음 페이지를 바로 돌려준다.
     if (seg.length === 6 && seg[5] === "body" && m === "GET") {
       const binding = bindings.find((item) => item.id === seg[4]);
       if (!binding) throw new Error("증거를 찾을 수 없습니다");
@@ -2156,7 +2156,7 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
     };
   }
   if (path === "/exploration/graph") return D.explorationGraph;
-  // 브로드캐스트 보드: 백엔드 /exploration/nodes와 같은 의미 —— 생성 순서(mock은 ts + id)로 페이지네이션하고,
+  // 브로드캐스트 보드: 백엔드 /exploration/nodes와 같은 의미 —— 만들어진 순서(mock은 ts + id)로 페이지네이션하고,
   // 이 페이지에 관련된 엣지와 엣지 반대편 노드도 함께 담는다.
   if (path === "/exploration/nodes") {
     const all = D.explorationGraph.nodes;
@@ -2190,7 +2190,7 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
         if (node) refs[id] = node;
       }
     }
-    // 이 페이지 노드(이웃 포함)가 앵커한 자산도 함께 담아 펼칠 때 보여 준다.
+    // 이 페이지 노드(이웃 포함)가 연결한 점검 대상도 함께 담아 펼칠 때 보여 준다.
     const assets: Record<string, ReturnType<typeof D.nodeAssetsFor>> = {};
     for (const id of new Set([...onPage, ...Object.keys(refs)])) {
       const anchored = D.nodeAssetsFor(id);
@@ -2223,7 +2223,7 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
   if (path === "/settings/web-search/test") return { ok: true, count: 5, backend: D.settings.web_search_backend };
   if (path === "/settings/python/detect") return { python_interpreter: "/usr/bin/python3" };
   if (path === "/chat")
-    return { reply: "(demo) 이 제안을 고우선순위 의도로 주입했습니다. work 에이전트가 곧 실행합니다.", mode: "hint" };
+    return { reply: "(demo) 이 제안을 우선 처리할 탐색 계획으로 전달했습니다. work 에이전트가 곧 실행합니다.", mode: "hint" };
   if (path === "/gc") return { removed: 0 };
 
   // ── 도구 실행 이력 ──
@@ -2392,7 +2392,7 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
   if (path === "/skills" && m === "POST") return { name: String(b.name ?? "new-skill") };
   if (seg[0] === "skills" && seg[2] === "files" && seg.length === 3) return { files: ["SKILL.md"] };
   if (seg[0] === "skills" && seg[2] === "files" && seg.length >= 4)
-    return { content: "# SKILL.md\n\n(demo) 이 skill의 설명 파일 예시입니다.", file: seg.slice(3).join("/") };
+    return { content: "# SKILL.md\n\n(demo) 이 스킬의 설명 파일 예시입니다.", file: seg.slice(3).join("/") };
 
   // ── visibility ──
   if (seg[0] === "visibility" && m === "GET") return { agents: [] };
@@ -2406,14 +2406,14 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
   if (seg[0] === "intercept" && seg[1] === "pending" && seg[3] === "decide") {
     const id = Number(seg[2]);
     const row = mockInterceptHistory.find((r) => r.id === id) ?? mockInterceptPending.find((r) => r.id === id);
-    if (row?.status !== "pending") throw new Error("승인이 이미 처리되었거나 존재하지 않습니다. 기록을 새로고침하세요");
+    if (row?.status !== "pending") throw new Error("승인이 이미 처리되었거나 존재하지 않습니다. 기록을 새로 고침하세요.");
     if (b.decision !== "allowed" && b.decision !== "denied") throw new Error("유효하지 않은 승인 동작");
     row.status = b.decision;
     row.decided_at = new Date().toISOString();
     const detail = mockInterceptDetails[id];
     if (detail) {
       detail.effective_action = b.decision === "allowed" ? "allow" : "deny";
-      detail.decision_reason = b.decision === "allowed" ? "사람이 실행 허용" : "사람이 실행 거부";
+      detail.decision_reason = b.decision === "allowed" ? "사용자가 실행을 허용함" : "사용자가 실행을 거부함";
       detail.execution_status = b.decision === "allowed" ? "unknown" : "not_executed";
       detail.output = b.decision === "allowed" ? "데모 모드에서는 도구를 실행하지 않았습니다." : "";
     }
@@ -2430,7 +2430,7 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
     const status = q.get("status") || "";
     const decisionSource = q.get("decision_source") || "";
     if (status && !["pending", "allowed", "denied", "timeout"].includes(status)) throw new Error("유효하지 않은 승인 상태");
-    if (decisionSource && !["model", "rule", "unknown"].includes(decisionSource)) throw new Error("유효하지 않은 판정 출처");
+    if (decisionSource && !["model", "rule", "unknown"].includes(decisionSource)) throw new Error("승인 방식이 올바르지 않습니다");
     const filtered = mockInterceptHistory.filter((row) => {
       const source =
         row.decision_source || (row.rule_id ? "rule" : /^\[(?:模型|모델)\]/.test(row.reason ?? "") ? "model" : "unknown");
@@ -2466,7 +2466,7 @@ function route(m: string, path: string, seg: string[], q: URLSearchParams, b: Re
   if (path === "/intercept/judge" && m === "PUT") return { ok: true };
 
   // ── 사이드 질문(/btw): demo에는 사이드 대화가 없음 ──
-  // 반드시 명시적으로 매칭해야 한다: 경로가 s로 끝나면 아래 읽기 폴백이 컬렉션 반환 []으로 판단해 items가 undefined가 된다.
+  // 반드시 명시적으로 매칭해야 한다: 경로가 s로 끝나면 아래 읽기 폴백이 컬렉션 요청으로 판단해 []를 돌려주고, 그러면 items가 undefined가 된다.
   if (seg.at(-1) === "side-questions") {
     if (m === "GET") return { items: [], current: null, next_cursor: 0, snapshot: null };
     if (m === "POST") throw new Error("데모 모드에서는 사이드 질문을 지원하지 않습니다");

@@ -7,7 +7,7 @@ import { ChevronRightIcon, MoreHorizontalIcon } from "lucide-react"
 function Breadcrumb({ className, ...props }: React.ComponentProps<"nav">) {
   return (
     <nav
-      aria-label="탐색 경로"
+      aria-label="이동 경로"
       data-slot="breadcrumb"
       className={cn(className)}
       {...props}

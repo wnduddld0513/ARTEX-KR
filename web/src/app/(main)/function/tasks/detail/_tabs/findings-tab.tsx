@@ -67,14 +67,14 @@ function Row({
               <span className="truncate font-medium">{findingLabel(f)}</span>
               {f.inherited && f.source_task_id && (
                 <Badge variant="outline" className="shrink-0">
-                  출처 #{f.source_task_id} · 읽기 전용
+                  출처 작업 #{f.source_task_id} · 읽기 전용
                 </Badge>
               )}
             </div>
             <span className="truncate text-xs text-muted-foreground">{f.summary}</span>
           </div>
         </button>
-        <Badge variant="outline">트래픽 증거 {f.traffic_count ?? 0} 건</Badge>
+        <Badge variant="outline">트래픽 증거 {f.traffic_count ?? 0}건</Badge>
         {f.assets && f.assets.length > 0 && (
           <div className="hidden shrink-0 flex-wrap justify-end gap-1 sm:flex">
             {f.assets.slice(0, 2).map((a) => (
@@ -215,7 +215,7 @@ export function FindingsTab({ taskId }: { taskId: string }) {
           <Row key={f.id} f={f} contextTaskId={taskId} onStatus={onStatus} />
         ))}
         {items.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-muted-foreground">이 작업 및 직접 연결된 작업에 확인된 발견이 없습니다.</p>
+          <p className="px-4 py-8 text-center text-sm text-muted-foreground">이 작업과 직접 연결된 작업에서 확인된 취약점이 없습니다.</p>
         )}
       </CardContent>
     </Card>

@@ -178,16 +178,16 @@ function SkillsOverview({
   if (skills.length === 0) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-sm text-muted-foreground">스킬이 없습니다. 왼쪽의 '새로 만들기' 또는 '압축 파일 업로드'로 시작하세요</p>
+        <p className="text-sm text-muted-foreground">스킬이 없습니다. 왼쪽의 '새 스킬' 또는 '압축 파일 업로드'로 시작하세요</p>
       </div>
     );
   }
 
   const stats: { label: string; value: React.ReactNode; hint?: string }[] = [
-    { label: "스킬 총수", value: skills.length, hint: `${agg.usedCount}개 호출됨` },
+    { label: "총 스킬 수", value: skills.length, hint: `${agg.usedCount}개 호출됨` },
     { label: "누적 호출", value: agg.totalCalls },
     { label: "미사용", value: agg.neverUsed.length, hint: agg.neverUsed.length > 0 ? "어떤 에이전트도 로드한 적 없음" : "모두 사용됨" },
-    { label: "미스 호출", value: agg.missingCalls, hint: missing.length > 0 ? `${missing.length}개 — 존재하지 않는 스킬` : "없음" },
+    { label: "없는 스킬 호출", value: agg.missingCalls, hint: missing.length > 0 ? `${missing.length}개 — 존재하지 않는 스킬` : "없음" },
   ];
 
   return (
@@ -232,7 +232,7 @@ function SkillsOverview({
                   />
                 </span>
                 <span className="w-16 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
-                  {s.calls} 회
+                  {s.calls}회
                 </span>
               </button>
             ))}
@@ -546,7 +546,7 @@ export default function SkillsPage() {
     setDetailMcps(next);
     try {
       await api.updateSkillMeta(skillName, { mcps: next });
-      toast.success(`${mcpName} ${mcpOn ? "연결" : "연결 해제"}`);
+      toast.success(mcpOn ? `${mcpName} 연결됨` : `${mcpName} 연결 해제됨`);
       load();
     } catch (e) {
       // roll back on error
@@ -559,7 +559,7 @@ export default function SkillsPage() {
     const on = (visibility[skillName] ?? []).includes(agentId);
     try {
       await api.toggleSkillVisibility(agentId, skillName, !on);
-      toast.success(`${agentName} 공개${on ? " 취소" : ""}`);
+      toast.success(on ? `${agentName} 공개를 해제했습니다` : `${agentName}에게 공개했습니다`);
       const ids = await api.skillVisibility(skillName);
       setVisibility((v) => ({ ...v, [skillName]: ids }));
     } catch (e) {
@@ -568,8 +568,8 @@ export default function SkillsPage() {
   }
 
   async function createNewSkill() {
-    if (!newName.trim()) { toast.error("name을 입력하세요"); return; }
-    if (!newDesc.trim()) { toast.error("description은 필수 항목입니다"); return; }
+    if (!newName.trim()) { toast.error("이름(name)을 입력하세요"); return; }
+    if (!newDesc.trim()) { toast.error("설명(description)은 필수입니다"); return; }
     setCreatingSkill(true);
     try {
       const name = newName.trim();
@@ -708,7 +708,7 @@ export default function SkillsPage() {
       <div className="flex items-center gap-3 border-b px-4 py-2.5 lg:px-6">
         <div className="flex flex-col gap-0.5">
           <h1 className="text-sm font-semibold leading-tight">스킬</h1>
-          <p className="text-muted-foreground text-xs">스킬 라이브러리 · agentskills.io 규격 · 에이전트별 권한으로 공개</p>
+          <p className="text-muted-foreground text-xs">스킬 라이브러리 · agentskills.io 규격 · 에이전트별 사용 권한으로 공개</p>
         </div>
         {/* 缺口清单：agent 点名调用、但库里没有的 skill —— 直接是该补什么的依据。 */}
         {missing.length > 0 && (
@@ -716,7 +716,7 @@ export default function SkillsPage() {
             <PopoverTrigger asChild>
               <Button size="sm" variant="outline" className="ml-auto">
                 <AlertTriangleIcon className="size-3.5 text-amber-500" />
-                {missing.length} 개 미스 호출
+                없는 스킬 호출 {missing.length}개
               </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-80">
@@ -727,7 +727,7 @@ export default function SkillsPage() {
                 {missing.map((m) => (
                   <div key={m.skill} className="flex items-center gap-2 text-sm">
                     <code className="min-w-0 flex-1 truncate font-mono text-xs" title={m.skill}>{m.skill}</code>
-                    <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{m.calls} 회</span>
+                    <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{m.calls}회</span>
                     <span className="shrink-0 text-xs text-muted-foreground">{fmtTime(m.last_used)}</span>
                   </div>
                 ))}
@@ -830,7 +830,7 @@ export default function SkillsPage() {
               })}
 
               {skills.length === 0 && (
-                <p className="p-3 text-xs text-muted-foreground">스킬이 없습니다. '새로 만들기'를 눌러 시작하세요</p>
+                <p className="p-3 text-xs text-muted-foreground">스킬이 없습니다. '새 스킬'을 눌러 시작하세요</p>
               )}
             </div>
           </ScrollArea>
@@ -877,7 +877,7 @@ export default function SkillsPage() {
                     </div>
                     <div className="rounded-md border p-2">
                       <p className="text-lg font-semibold tabular-nums">{selectedSkill.tasks}</p>
-                      <p className="text-xs text-muted-foreground">커버한 태스크 수</p>
+                    <p className="text-xs text-muted-foreground">사용된 작업 수</p>
                     </div>
                     <div className="rounded-md border p-2">
                       <p className="truncate text-sm font-medium" title={fmtTime(selectedSkill.last_used)}>
@@ -898,14 +898,14 @@ export default function SkillsPage() {
                     <p className="text-xs text-muted-foreground">호출 상세를 불러오는 중…</p>
                   ) : usageCalls.length > 0 ? (
                     <div className="rounded-md border">
-                      <div className="border-b px-2 py-1 text-xs text-muted-foreground">최근  {usageCalls.length} 회 호출</div>
+                      <div className="border-b px-2 py-1 text-xs text-muted-foreground">최근 {usageCalls.length}회 호출</div>
                       <div className="max-h-56 overflow-y-auto">
                         {usageCalls.map((c, i) => (
                           <div key={`${c.ts}-${i}`} className="flex items-center gap-2 border-b px-2 py-1 text-xs last:border-b-0">
                             <span className="tabular-nums text-muted-foreground">{fmtTime(c.ts)}</span>
                             <Badge variant="outline" className="font-normal">{c.agent_key || "—"}</Badge>
                             <span className="ml-auto text-muted-foreground">
-                              {c.task_id > 0 ? `태스크 #${c.task_id}` : c.session_id ? "대화 세션" : "—"}
+                              {c.task_id > 0 ? `작업 #${c.task_id}` : c.session_id ? "대화 세션" : "—"}
                             </span>
                           </div>
                         ))}
@@ -921,7 +921,7 @@ export default function SkillsPage() {
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
                       MCP 연결
-                      <span className="ml-1 font-normal">(스킬을 로드할 때만 도구를 공개/해제합니다)</span>
+                      <span className="ml-1 font-normal">(스킬을 로드할 때만 이 도구들을 공개하고 사용할 수 있게 합니다)</span>
                     </Label>
                     {mcpOptions.length === 0 ? (
                       <p className="text-xs text-muted-foreground">MCP가 없습니다. 'MCP' 페이지에서 추가할 수 있습니다.</p>
@@ -941,7 +941,8 @@ export default function SkillsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">가시성(에이전트별 권한)</Label>
+                    <Label className="text-xs text-muted-foreground">에이전트별 사용 권한</Label>
+                    <p className="text-muted-foreground text-xs">각 에이전트가 이 스킬을 사용할 수 있는지 설정합니다.</p>
                     <div className="space-y-2">
                       {agents.map((a) => (
                         <label key={a.key} className="flex cursor-pointer items-center gap-2 text-sm">
@@ -997,7 +998,7 @@ export default function SkillsPage() {
             </AlertDialogTitle>
             <AlertDialogDescription>
               {pendingDelete?.kind === "skill"
-                ? "이 스킬의 모든 파일, MCP 연결, 가시성 설정이 삭제됩니다. 이 작업은 되돌릴 수 없습니다."
+                ? "이 스킬의 모든 파일, MCP 연결, 사용 권한 설정이 삭제됩니다. 이 작업은 되돌릴 수 없습니다."
                 : pendingDelete?.kind === "dir"
                   ? "이 폴더 아래의 모든 파일도 함께 삭제됩니다. 이 작업은 되돌릴 수 없습니다."
                   : "이 작업은 되돌릴 수 없습니다."}
@@ -1033,7 +1034,7 @@ export default function SkillsPage() {
                 )}
               </TabsTrigger>
               <TabsTrigger value="visibility">
-                가시성
+                사용 권한
                 {newVisibility.length > 0 && (
                   <span className="ml-1.5 rounded-full bg-primary px-1.5 py-0.5 text-[10px] leading-none text-primary-foreground">
                     {newVisibility.length}
@@ -1066,7 +1067,7 @@ export default function SkillsPage() {
                 </div>
               </div>
               <div className="flex min-h-0 flex-1 flex-col gap-1.5">
-                <Label htmlFor="sk-inst">본문 <span className="text-muted-foreground text-xs font-normal">(비워두면 기본 골격 자동 생성)</span></Label>
+                <Label htmlFor="sk-inst">본문 <span className="text-muted-foreground text-xs font-normal">(비워두면 기본 구조를 자동 생성)</span></Label>
                 <Textarea id="sk-inst"
                   className="min-h-40 flex-1 resize-none font-mono text-sm leading-relaxed"
                   placeholder={"## 실행 방법\n\n1. 오류 탐지부터\n2. 블라인드 인젝션 유형 구분\n\n스크립트는 scripts/ 디렉터리에 둡니다."}
@@ -1076,7 +1077,7 @@ export default function SkillsPage() {
 
             {/* 关联 MCP */}
             <TabsContent value="mcp" className="overflow-y-auto px-4 pb-4 pt-4 data-[state=inactive]:hidden">
-              <p className="mb-3 text-xs text-muted-foreground">스킬을 로드할 때만 선택한 MCP의 도구를 공개하고 잠금 해제합니다.</p>
+              <p className="mb-3 text-xs text-muted-foreground">스킬을 로드할 때만 선택한 MCP의 도구를 공개하고 사용할 수 있게 합니다.</p>
               {mcpOptions.length === 0 ? (
                 <p className="text-xs text-muted-foreground">MCP가 없습니다. 'MCP' 페이지에서 추가할 수 있습니다.</p>
               ) : (
@@ -1098,7 +1099,7 @@ export default function SkillsPage() {
 
             {/* 可见性 */}
             <TabsContent value="visibility" className="overflow-y-auto px-4 pb-4 pt-4 data-[state=inactive]:hidden">
-              <p className="mb-3 text-xs text-muted-foreground">선택한 에이전트는 생성되면 이 스킬을 볼 수 있습니다.</p>
+              <p className="mb-3 text-xs text-muted-foreground">선택한 에이전트는 스킬이 생성되면 바로 사용할 수 있습니다.</p>
               {agents.length === 0 ? (
                 <p className="text-xs text-muted-foreground">(에이전트 없음)</p>
               ) : (

@@ -24,26 +24,26 @@ function own<T>(table: Record<string, T>, key: string | undefined): T | undefine
 // 시스템이 seed 하는 내장 에이전트 메타데이터(키 기준).
 const BUILTIN_AGENT_META: Record<string, AgentMeta> = {
   goals: {
-    name: "목표 분해기",
-    description: "침투 작업 목표를 서로 독립적이고 검증 가능한 하위 목표로 분해합니다.",
+    name: "목표 분석",
+    description: "침투 테스트 목표를 각각 검증할 수 있는 세부 목표로 나눕니다.",
   },
   planner: {
     name: "플래너",
     description:
-      "상황과 목표 달성 여부를 확인하고, 아직 탐색하지 않은 새 방향이 있을 때 탐색 계획을 보충합니다(작업당 하나의 계획 루프).",
+      "진행 상황과 목표 달성 여부를 확인하고, 아직 확인하지 않은 접근 방법을 탐색 계획에 추가합니다.",
   },
   mainagent: {
     name: "메인 에이전트",
-    description: "사용자와 에이전트 간 인터페이스: 진행 상황을 관찰하고 사용자 요청을 힌트 또는 우선순위가 높은 탐색 계획으로 반영합니다.",
+    description: "진행 상황을 사용자에게 알리고, 사용자 요청을 탐색에 참고할 정보나 우선 처리할 계획으로 전달합니다.",
   },
   worker: {
     name: "실행 에이전트",
-    description: "의도를 하나 받아 실행하고, 발견한 사실·취약점을 지식 그래프에 기록한 뒤 멈춥니다.",
+    description: "탐색 계획 하나를 실행하고, 확인한 사실과 취약점을 지식 그래프에 기록합니다.",
   },
   auto: {
     name: "자동 운영",
     description:
-      "플랫폼 운영 도우미: 도구로 작업(생성/조회/일시중지/힌트 제공)과 자산을 관리하고, 스킬·사용자 정의 도구·MCP를 생성·수정할 수 있습니다.",
+      "작업 생성·조회·일시중지와 점검 대상 관리를 돕습니다. 탐색에 참고할 정보를 전달하고 스킬, 사용자 정의 도구, MCP를 만들거나 수정할 수 있습니다.",
   },
   pentest: {
     name: "침투 테스트",
@@ -52,7 +52,7 @@ const BUILTIN_AGENT_META: Record<string, AgentMeta> = {
   },
   retester: {
     name: "취약점 재검증",
-    description: "취약점 상세에서 수동으로 시작해 원 증거를 읽고 독립적인 재검증 결론을 저장합니다.",
+    description: "취약점 상세 화면에서 실행하면 기존 증거를 확인하고, 별도로 재검증한 결과를 저장합니다.",
   },
 };
 
@@ -63,7 +63,7 @@ const GLOBAL_VAR_META: Record<string, VarMeta> = {
   },
   DataDir: {
     description:
-      "서버 데이터 루트 디렉터리(모든 작업/대화 산출물의 루트, 각 agent는 그 아래 하위 디렉터리에 기록, 예: <DataDir>/<taskID>)",
+      "서버 데이터 루트 디렉터리(모든 작업/대화 산출물의 루트, 각 에이전트는 그 아래 하위 디렉터리에 기록, 예: <DataDir>/<taskID>)",
   },
 };
 
@@ -76,8 +76,8 @@ const BUILTIN_VAR_META: Record<string, Record<string, VarMeta>> = {
     },
   },
   planner: {
-    Goal: { description: "작업 총목표", example: "example.com 관리자 권한 획득" },
-    AssetSummary: { description: "자산 개수/유형 분포 요약(선택)", example: "domain:3 ip:5 site:2" },
+    Goal: { description: "작업 전체 목표", example: "example.com 관리자 권한 획득" },
+    AssetSummary: { description: "점검 대상 개수/유형 분포 요약(선택)", example: "domain:3 ip:5 site:2" },
   },
   mainagent: {
     Goal: { description: "현재 작업 목표", example: "example.com 관리자 권한 획득" },
@@ -86,7 +86,7 @@ const BUILTIN_VAR_META: Record<string, Record<string, VarMeta>> = {
   },
   worker: {
     ProxyAddr: { description: "트래픽 기록용 프록시 주소(프롬프트의 if 조건으로 안내 문구 선택)", example: "127.0.0.1:8080" },
-    WorkerName: { description: "worker 자기 식별(선택)", example: "worker-1" },
+    WorkerName: { description: "워커 식별 이름(선택)", example: "worker-1" },
   },
 };
 
