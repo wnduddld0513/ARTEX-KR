@@ -232,10 +232,26 @@ function Save-Configuration($Value) {
     } finally { if (Test-Path -LiteralPath $temporary) { Remove-Item -LiteralPath $temporary } }
 }
 
-function New-Page([string]$Title, [string]$Subtitle) {
+function New-Page([string]$Title, [string]$Subtitle, [switch]$HomeLogo, [int]$LogoLines = 6) {
     $script:rows = [Collections.Generic.List[ArtexLauncher.Row]]::new()
-    Add-Row '  A R T E X  /  KR' Cyan
-    Add-Row '  LOCAL CONSOLE' DarkGray
+    if ($HomeLogo -and [ArtexLauncher.Screen]::Width -ge 46 -and [ArtexLauncher.Screen]::Height -ge 22) {
+        $logo = @(
+            '  █████╗ ██████╗ ████████╗███████╗██╗  ██╗',
+            ' ██╔══██╗██╔══██╗╚══██╔══╝██╔════╝╚██╗██╔╝',
+            ' ███████║██████╔╝   ██║   █████╗   ╚███╔╝',
+            ' ██╔══██║██╔══██╗   ██║   ██╔══╝   ██╔██╗',
+            ' ██║  ██║██║  ██║   ██║   ███████╗██╔╝ ██╗',
+            ' ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝'
+        )
+        for ($i = 0; $i -lt $logo.Count; $i++) {
+            if ($i -lt $LogoLines) { Add-Row ('  ' + $logo[$i]) Cyan }
+            else { Add-Row '' }
+        }
+        Add-Row '    ARTEX-KR  /  로컬 실행 도우미' DarkGray
+    } else {
+        Add-Row '  A R T E X  /  KR' Cyan
+        Add-Row '  LOCAL CONSOLE' DarkGray
+    }
     Add-Row ('  ' + ('─' * [Math]::Max(1, [ArtexLauncher.Screen]::Width - 4))) DarkCyan
     Add-Row ('  ' + $Title) White
     Add-Row ('  ' + $Subtitle) DarkGray
@@ -253,10 +269,11 @@ function Show-Page([string]$Footer = '↑ ↓ 선택   Enter 확인   Esc 돌아
     [ArtexLauncher.Screen]::Draw($script:rows.ToArray())
 }
 function Read-Key { return [Console]::ReadKey($true) }
-function Select-Action([string]$Title, [string]$Subtitle, [string[]]$Options, [string[]]$Details = @()) {
+function Select-Action([string]$Title, [string]$Subtitle, [string[]]$Options, [string[]]$Details = @(), [switch]$HomeLogo) {
     $selected = 0
+    $logoLines = if ($HomeLogo -and !$script:homeIntroShown) { 1 } else { 6 }
     while ($true) {
-        New-Page $Title $Subtitle
+        New-Page $Title $Subtitle -HomeLogo:$HomeLogo -LogoLines $logoLines
         foreach ($detail in $Details) { Add-Row ('  ' + $detail) }
         Add-Row ''
         for ($i = 0; $i -lt $Options.Count; $i++) {
@@ -264,6 +281,12 @@ function Select-Action([string]$Title, [string]$Subtitle, [string[]]$Options, [s
             else { Add-Row ('    ' + $Options[$i]) Gray }
         }
         Show-Page
+        if ($HomeLogo -and $logoLines -lt 6) {
+            if ([Console]::KeyAvailable) { $logoLines = 6 }
+            else { Start-Sleep -Milliseconds 120; $logoLines++ }
+            continue
+        }
+        if ($HomeLogo) { $script:homeIntroShown = $true }
         $key = Read-Key
         switch ($key.Key) {
             UpArrow { $selected = ($selected + $Options.Count - 1) % $Options.Count }
@@ -477,7 +500,7 @@ try {
         while (!$done) {
             $configured = [bool]($script:config.database.password -or $script:config.database.dsn)
             $dbState = if ($configured) { '저장된 연결 설정 사용' } else { '연결 비밀번호 설정 필요' }
-            $choice = Select-Action '시작하기' '설정을 확인하고 로컬 서버를 실행하세요.' @('서버 시작', 'PostgreSQL 연결 설정', '종료') @(
+            $choice = Select-Action -HomeLogo '시작하기' '설정을 확인하고 로컬 서버를 실행하세요.' @('서버 시작', 'PostgreSQL 연결 설정', '종료') @(
                 ('웹 주소       ' + $script:url), ('데이터베이스  ' + $dbState), '', 'ARTEX 로그인 설정은 서버 연결 후 별도 화면에서 안내합니다.'
             )
             switch ($choice) {
