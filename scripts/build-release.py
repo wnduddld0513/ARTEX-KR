@@ -144,7 +144,7 @@ def main():
     commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     metadata = {"version": args.version, "commit": commit,
                 "built_at": datetime.now(timezone.utc).isoformat(), "ui_language": "ko",
-                "agent_docs_language": "en",
+                "agent_docs_language": "upstream-original",
                 "go": subprocess.check_output([args.go, "version"], text=True).strip()}
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:
         outputs = list(pool.map(lambda target: build_target(target, args, metadata), TARGETS))

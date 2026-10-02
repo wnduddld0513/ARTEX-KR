@@ -4,7 +4,7 @@
 
 시작 화면에는 ARTEX 로고가 위에서부터 한 줄씩 나타납니다. 약 0.6초 뒤 완성되며, 키를 누르면 효과를 건너뜁니다. 홈으로 돌아올 때는 완성된 로고를 바로 표시합니다. 작은 터미널에서는 메뉴가 잘리지 않도록 간단한 제목을 사용합니다.
 
-`launcher.bat`, `launcher.ps1` 두 파일을 `artex.exe`와 같은 폴더에 놓으세요. 같은 폴더의 실행 파일을 자동으로 사용합니다. 예: `C:\ARTEX\artex-0.3.15-windows-amd64\launcher.bat`. 별도 보조 파일은 필요하지 않습니다.
+`launcher.bat`, `launcher.ps1` 두 파일을 `artex.exe`와 같은 폴더에 놓으세요. 같은 폴더의 실행 파일을 자동으로 사용합니다. 설치 위치를 지정하거나 별도 보조 파일을 추가할 필요가 없습니다.
 
 1. **홈**에서 서버 시작 또는 PostgreSQL 연결 설정을 선택합니다.
 2. **데이터베이스 연결**에서는 PostgreSQL 설치 때 정한 비밀번호를 입력합니다. 저장된 값이 있으면 Enter로 유지합니다.
@@ -30,7 +30,8 @@
 DB 연결 설정을 저장할 때 기존 `config.json`의 다른 필드는 유지하며 이전 파일은 `config.json.launcher-backup`으로 보관합니다. ARTEX 로그인 비밀번호는 기존 서버의 초기 설정 API로 저장합니다. 에이전트·프롬프트·스킬 데이터에는 변경을 적용하지 않습니다.
 
 ```powershell
-.\launcher.bat -InstallDir C:\ARTEX\artex-0.3.15-windows-amd64
+.\launcher.bat
+.\launcher.bat -InstallDir .\artex-0.3.15-windows-amd64
 .\launcher.bat -Port 8789
 .\launcher.bat -Check
 .\launcher.bat -Preview
